@@ -12,6 +12,7 @@ func (s *Server) routes() http.Handler {
 
 	r := mux.NewRouter()
 
+	r.HandleFunc("/", s.home)
 	fileServer := http.FileServer(http.Dir(s.PublicDir))
 	r.PathPrefix(singleJoiningSlash(s.BaseURL.Path, "/static/")).Handler(fileServer)
 
