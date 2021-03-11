@@ -18,6 +18,31 @@ type Server struct {
 type jsGlobals struct {
 	ConsoleVersion string `json:"consoleVersion"`
 	BasePath       string `json:"basePath"`
+
+	KubeAPIServerURL         string `json:"kubeAPIServerURL"`
+	PrometheusBaseURL        string `json:"prometheusBaseURL"`
+	PrometheusTenancyBaseURL string `json:"prometheusTenancyBaseURL"`
+	AlertManagerBaseURL      string `json:"alertManagerBaseURL"`
+	MeteringBaseURL          string `json:"meteringBaseURL"`
+	Branding                 string `json:"branding"`
+	CustomProductName        string `json:"customProductName"`
+
+	GrafanaPublicURL    string `json:"grafanaPublicURL"`
+	PrometheusPublicURL string `json:"prometheusPublicURL"`
+	ThanosPublicURL     string `json:"thanosPublicURL"`
+	LoadTestFactor      int    `json:"loadTestFactor"`
+	GOARCH              string `json:"GOARCH"`
+	GOOS                string `json:"GOOS"`
+
+	KeycloakRealm    string `json:keycloakRealm`
+	KeycloakAuthURL  string `json:keycloakAuthURL`
+	KeycloakClientId string `json:keycloakClientId`
+
+	McMode         bool   `json:mcMode`
+	McModeFile     string `json:mcModeFile`
+	McModeOperator bool   `json:mcModeOperator`
+
+	ReleaseModeFlag bool `json:"releaseModeFlag"`
 }
 
 func NewServer() (*Server, error) {
@@ -26,7 +51,7 @@ func NewServer() (*Server, error) {
 			Scheme: "http",
 			Host:   "localhost:3000",
 		},
-		PublicDir: "/",
+		PublicDir: "./index.html",
 		Log:       logrus.StandardLogger(),
 	}, nil
 }
