@@ -1,0 +1,14 @@
+apiVersion: console.hypercloud.io/v1beta1
+kind: ConsoleConfig
+servingInfo:
+  listen: http://0.0.0.0:9000
+  base-address: ""
+  base-path: "/"
+clusterInfo:
+  consoleBaseAddress: http://localhost:9000
+  masterPublicURL: https://127.0.0.1:8443
+auth:
+  keycloak-client-id: console-oauth-client
+  keycloak-realm: hypercloud
+  keycloak-auth-url: https://127.0.0.1:8443
+  

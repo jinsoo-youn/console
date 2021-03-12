@@ -15,7 +15,7 @@ func (s *Server) routes() http.Handler {
 	r.HandleFunc("/", s.home)
 	r.HandleFunc("/index", s.indexHandler)
 	fileServer := http.FileServer(http.Dir(s.PublicDir))
-	r.PathPrefix(singleJoiningSlash(s.BaseURL.Path, "/static/")).Handler(fileServer)
+	r.PathPrefix("/static/").Handler(http.StripPrefix(singleJoiningSlash(s.BaseURL.Path, "/static/"), gzipHandler(fileServer)))
 
 	return standardMiddleware.Then(r)
 

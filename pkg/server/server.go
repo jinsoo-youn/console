@@ -4,9 +4,11 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Server struct {
@@ -45,14 +47,20 @@ type jsGlobals struct {
 	ReleaseModeFlag bool `json:"releaseModeFlag"`
 }
 
-func NewServer() (*Server, error) {
+func NewServer(env *viper.Viper) (*Server, error) {
+	var log = logrus.StandardLogger()
+	log.Out = os.Stdout
+	file, err := os.OpenFile("./logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.Out = file
+	}
 	return &Server{
 		BaseURL: &url.URL{
 			Scheme: "http",
 			Host:   "localhost:3000",
 		},
-		PublicDir: "./index.html",
-		Log:       logrus.StandardLogger(),
+		PublicDir: viper.GetViper().GetString("public-dir"),
+		Log:       log,
 	}, nil
 }
 

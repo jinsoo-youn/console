@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // serverCmd represents the server command
@@ -34,16 +35,28 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("server called")
-		srv, _ := server.NewServer()
+		env := viper.GetViper()
+		fmt.Println(env.AllSettings())
+
+		srv, _ := server.NewServer(env)
 		srv.Start()
 
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(serverCmd)
-
 	// Here you will define your flags and configuration settings.
+	serverCmd.Flags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
+	serverCmd.Flags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
+	serverCmd.Flags().StringP("base-path", "p", "/", "defalut base path")
+	serverCmd.Flags().StringP("public-dir", "d", "./frontend/public/dist", "directory containing static web assets.")
+
+	serverCmd.Flags().String("keycloak-realm", "", "Keycloak Realm Name")
+	serverCmd.Flags().String("keycloak-auth-url", "", "URL of the Keycloak Auth server.")
+	serverCmd.Flags().String("keycloak-client-id", "", "Keycloak Client Id")
+
+	viper.BindPFlags(serverCmd.Flags())
+	rootCmd.AddCommand(serverCmd)
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:

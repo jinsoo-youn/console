@@ -26,6 +26,16 @@ import (
 )
 
 var cfgFile string
+var cfg *Configuration
+
+type Configuration struct {
+	ApiVersion  string `yaml:"apiVersion"`
+	Kind        string `yaml:"kind"`
+	ServingInfo `yaml:"servingInfo"`
+}
+type ServingInfo struct {
+	Listen string `yaml:"listen"`
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -55,11 +65,11 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "-c", "config file (default is $HOME/.console.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "-c", "config file (default is $HOME/console.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -78,9 +88,12 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
+	// viper.Set("test", "test is ok ^_^")
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+
+	viper.Unmarshal(&cfg)
+	fmt.Printf("%v", cfg)
 }
