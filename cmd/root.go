@@ -32,7 +32,9 @@ import (
 var cfgFile string
 var cfg *v1.Config
 
-var defaultServer *hypercloud.HttpServer
+var (
+	defaultServer = &hypercloud.HttpServer{}
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

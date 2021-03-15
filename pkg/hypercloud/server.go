@@ -14,6 +14,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	plog = log.New().WithField("Test", "Test")
+)
+
 type stoppableServer interface {
 	Shutdown(ctx context.Context) error
 	Close() error
@@ -27,6 +31,7 @@ type HttpServer struct {
 }
 
 func New(config *v1.ConsoleInfo) (*HttpServer, error) {
+	plog.Info("plog test")
 	logger := log.StandardLogger()
 	// logger.SetFormatter(&log.JSONFormatter{})
 

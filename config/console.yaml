@@ -26,4 +26,5 @@ customization:
   releaseMode: "true"
   customProductName: "hypercloud"
   customLogoFile: "./frontend/logo.jpg"
+  publicDir: "./test/test"
   
