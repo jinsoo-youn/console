@@ -2,19 +2,30 @@ package server
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
+
+	v1 "console/pkg/api/v1"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 type Server struct {
+	Log *logrus.Logger
+
 	BaseURL   *url.URL
 	PublicDir string
-	Log       *logrus.Logger
+
+	// A client with the correct TLS setup for communticating with the API server.
+
+	// Keycloak (Hyperauth) information for logging to console
+	KeycloakRealm    string
+	KeycloakAuthURL  string
+	KeycloakClientId string
 }
 
 type jsGlobals struct {
@@ -47,17 +58,21 @@ type jsGlobals struct {
 	ReleaseModeFlag bool `json:"releaseModeFlag"`
 }
 
-func NewServer(env *viper.Viper) (*Server, error) {
+func New(config *v1.Config) (*Server, error) {
 	var log = logrus.StandardLogger()
 	log.Out = os.Stdout
 	file, err := os.OpenFile("./logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	log.WithField("type", "server")
 	if err == nil {
 		log.Out = file
 	}
+	log.Out = os.Stdout
+	fmt.Printf("base Addr %v, \n ", config.ConsoleInfo.Listen)
+	addr, _ := url.Parse(config.Listen)
 	return &Server{
 		BaseURL: &url.URL{
-			Scheme: "http",
-			Host:   "localhost:3000",
+			Scheme: addr.Scheme,
+			Host:   addr.Host,
 		},
 		PublicDir: viper.GetViper().GetString("public-dir"),
 		Log:       log,
@@ -69,8 +84,9 @@ func (s *Server) Start() {
 		PreferServerCipherSuites: true,
 		CurvePreferences:         []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
+
 	srv := &http.Server{
-		Addr:         "localhost:3000",
+		Addr:         s.BaseURL.Host,
 		Handler:      s.routes(),
 		TLSConfig:    tlsConfig,
 		IdleTimeout:  time.Minute,

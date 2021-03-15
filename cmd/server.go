@@ -16,9 +16,12 @@ limitations under the License.
 package cmd
 
 import (
-	"console/pkg/server"
+	"console/pkg/hypercloud"
 	"fmt"
+	"net/http"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,27 +38,48 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("server called")
-		env := viper.GetViper()
-		fmt.Println(env.AllSettings())
 
-		srv, _ := server.NewServer(env)
-		srv.Start()
+		fmt.Println(cfg)
 
+		// defaultServer, _ := hypercloud.New(&cfg.ConsoleInfo)
+		// fmt.Printf("Check server config: %v \n", defaultServer.DefaultConfig)
+		// defaultServer.Start(context.TODO())
+
+		fmt.Println("sleep 10 sec")
+		time.Sleep(time.Second * 10)
+		r := mux.NewRouter()
+		r.HandleFunc("/", home)
+		fmt.Println("changing router")
+		defaultServer = viper.Get("testServer").(*hypercloud.HttpServer)
+		defaultServer.Switcher.UpdateHandler(r)
+
+		fmt.Println("sleep 10 sec")
+		time.Sleep(time.Second * 10)
+		fmt.Println("changing router based on MAP")
+		r.HandleFunc("/test/", func(w http.ResponseWriter,
+			r *http.Request) {
+			w.Write([]byte("test"))
+		})
+		defaultServer.Switcher.UpdateHandler(r)
 	},
+}
+
+func home(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("ok server is working"))
 }
 
 func init() {
 	// Here you will define your flags and configuration settings.
-	serverCmd.Flags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
-	serverCmd.Flags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
-	serverCmd.Flags().StringP("base-path", "p", "/", "defalut base path")
-	serverCmd.Flags().StringP("public-dir", "d", "./frontend/public/dist", "directory containing static web assets.")
+	// serverCmd.Flags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
+	// serverCmd.Flags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
+	// serverCmd.Flags().StringP("base-path", "p", "/", "defalut base path")
+	// serverCmd.Flags().StringP("public-dir", "d", "./frontend/public/dist", "directory containing static web assets.")
 
-	serverCmd.Flags().String("keycloak-realm", "", "Keycloak Realm Name")
-	serverCmd.Flags().String("keycloak-auth-url", "", "URL of the Keycloak Auth server.")
-	serverCmd.Flags().String("keycloak-client-id", "", "Keycloak Client Id")
+	// serverCmd.Flags().String("keycloak-realm", "", "Keycloak Realm Name")
+	// serverCmd.Flags().String("keycloak-auth-url", "", "URL of the Keycloak Auth server.")
+	// serverCmd.Flags().String("keycloak-client-id", "", "Keycloak Client Id")
 
-	viper.BindPFlags(serverCmd.Flags())
+	// viper.BindPFlags(serverCmd.Flags())
 	rootCmd.AddCommand(serverCmd)
 
 	// Cobra supports Persistent Flags which will work for this command

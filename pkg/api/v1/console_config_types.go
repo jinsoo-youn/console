@@ -1,53 +1,45 @@
 package v1
 
 type Config struct {
-	APIVersion     string `yaml:"apiVersion"`
-	Kind           string `yaml:"kind"`
-	ServingInfo    `yaml:"servingInfo"`
-	ClusterInfo    `yaml:"clusterInfo"`
-	Auth           `yaml:"auth"`
-	Customization  `yaml:"customization"`
-	MonitoringInfo `yaml:"monitoringInfo,omitempty"`
-	// ProxyInfo      []ProxyInfo `yaml:"proxyInfo,omitempty"`
+	APIVersion    string `yaml:"apiVersion"`
+	Kind          string `yaml:"kind"`
+	ConsoleInfo   `yaml:"consoleInfo"`
+	ClusterInfo   `yaml:"clusterInfo"`
+	Auth          `yaml:"auth"`
+	Customization `yaml:"customization"`
 }
 
-type ServingInfo struct {
-	BindAddress  string `yaml:"bindAddress,omitempty"`
+type ConsoleInfo struct {
+	Listen       string `yaml:"listen,omitempty"`
+	BaseAddress  string `yaml:"baseAddress,omitempty"`
+	BasePath     string `yaml:"basePath,omitempty"`
 	CertFile     string `yaml:"certFile,omitempty"`
 	KeyFile      string `yaml:"keyFile,omitempty"`
 	RedirectPort int    `yaml:"redirectPort,omitempty"`
-
-	// These fields are defined in `HTTPServingInfo`, but are not supported for console. Fail if any are specified.
-	BindNetwork           string        `yaml:"bindNetwork,omitempty"`
-	ClientCA              string        `yaml:"clientCA,omitempty"`
-	NamedCertificates     []interface{} `yaml:"namedCertificates,omitempty"`
-	MinTLSVersion         string        `yaml:"minTLSVersion,omitempty"`
-	CipherSuites          []string      `yaml:"cipherSuites,omitempty"`
-	MaxRequestsInFlight   int64         `yaml:"maxRequestsInFlight,omitempty"`
-	RequestTimeoutSeconds int64         `yaml:"requestTimeoutSeconds,omitempty"`
-}
-
-// Monitoring holds URLs for monitoring related services
-type MonitoringInfo struct {
-	AlertmanagerPublicURL string `yaml:"alertmanagerPublicURL,omitempty"`
-	GrafanaPublicURL      string `yaml:"grafanaPublicURL,omitempty"`
-	PrometheusPublicURL   string `yaml:"prometheusPublicURL,omitempty"`
-	ThanosPublicURL       string `yaml:"thanosPublicURL,omitempty"`
-}
-
-// ClusterInfo holds information the about the cluster such as master public URL and console public URL.
-type ClusterInfo struct {
-	ConsoleBaseAddress string `yaml:"consoleBaseAddress,omitempty"`
-	ConsoleBasePath    string `yaml:"consoleBasePath,omitempty"`
-	MasterPublicURL    string `yaml:"masterPublicURL,omitempty"`
 }
 
 // Auth holds configuration for authenticating with OpenShift. The auth method is assumed to be "openshift".
 type Auth struct {
-	ClientID            string `yaml:"clientID,omitempty"`
-	ClientSecretFile    string `yaml:"clientSecretFile,omitempty"`
-	OAuthEndpointCAFile string `yaml:"oauthEndpointCAFile,omitempty"`
-	LogoutRedirect      string `yaml:"logoutRedirect,omitempty"`
+	KeycloakRealm    string `yaml:"keycloakRealm,omitempty"`
+	KeycloakAuthURL  string `yaml:"keycloakAuthURL,omitempty"`
+	KeycloakClientId string `yaml:"keycloakClientId,omitempty"`
+}
+
+// ClusterInfo holds information the about the cluster such as master public URL and console public URL.
+type ClusterInfo struct {
+	MasterEndpoint string `yaml:"masterPublicURL,omitempty"`
+	// main app
+	HypercloudEndpoint      string `yaml:"hypercloudEndpoint,omitempty"`
+	MultiHypercloudEndpoint string `yaml:"multiHypercloudEndpoint,omitempty"`
+	WebhookEndpoint         string `yaml:"WebhookEndpoint,omitempty"`
+	// Third party app
+	KialiEndpoint  string `yaml:"kialiEndpoint,omitempty"`
+	KibanaEndpoint string `yaml:"kibanaEndpoint,omitempty"`
+	// Monitoring app
+	GrafanaEndpoint      string `yaml:"grafanaEndpoint,omitempty"`
+	AlertmanagerEndpoint string `yaml:"alertmanagerEndpoint,omitempty"`
+	PrometheusEndpoint   string `yaml:"prometheusEndpoint,omitempty"`
+	ThanosEndpoint       string `yaml:"thanosEndpoint,omitempty"`
 }
 
 type Customization struct {
@@ -55,4 +47,6 @@ type Customization struct {
 	DocumentationBaseURL string `yaml:"documentationBaseURL,omitempty"`
 	CustomProductName    string `yaml:"customProductName,omitempty"`
 	CustomLogoFile       string `yaml:"customLogoFile,omitempty"`
+	McMode               string `yaml:"mcMode,omitempty"`
+	ReleaseMode          string `yaml:"releaseMode,omitempty"`
 }

@@ -20,4 +20,7 @@ import "console/cmd"
 func main() {
 	// main.go just calls the Execute() function of cmd/root.go
 	cmd.Execute()
+
+	end := make(chan bool)
+	<-end
 }

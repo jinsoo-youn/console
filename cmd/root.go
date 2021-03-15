@@ -16,26 +16,23 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
+	v1 "console/pkg/api/v1"
+	"console/pkg/hypercloud"
 
 	homedir "github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
-var cfg *Configuration
+var cfg *v1.Config
 
-type Configuration struct {
-	ApiVersion  string `yaml:"apiVersion"`
-	Kind        string `yaml:"kind"`
-	ServingInfo `yaml:"servingInfo"`
-}
-type ServingInfo struct {
-	Listen string `yaml:"listen"`
-}
+var defaultServer *hypercloud.HttpServer
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -47,6 +44,16 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+
+		log.Println("root persistentPreRun called")
+
+		log.Println(cfg)
+		defaultServer, _ := hypercloud.New(&cfg.ConsoleInfo)
+		log.Printf("Check server config: %v \n", defaultServer.DefaultConfig)
+		defaultServer.Start(context.TODO())
+		viper.Set("testServer", defaultServer)
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -60,13 +67,21 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
+	log.Println("root init func called")
+	log.Printf("%v \n", cfgFile)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "-c", "config file (default is $HOME/console.yaml)")
 
+	rootCmd.Flags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.Flags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
+	rootCmd.Flags().StringP("base-path", "p", "/", "defalut base path")
+	rootCmd.Flags().StringP("certFile", "", "./cert/ca.csr", "Cert file for TLS server")
+	rootCmd.Flags().StringP("keyFile", "", "./cert/ca.key", "Key file for TLS server")
+
+	viper.BindPFlags(rootCmd.Flags())
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -91,9 +106,9 @@ func initConfig() {
 	// viper.Set("test", "test is ok ^_^")
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		log.Error(fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed()))
 	}
 
 	viper.Unmarshal(&cfg)
-	fmt.Printf("%v", cfg)
+	log.Printf("%v \n", cfg)
 }
