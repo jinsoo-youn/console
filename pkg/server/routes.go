@@ -97,11 +97,14 @@ type Router struct {
 }
 
 func New(config *v1.Config) (*Router, error) {
-	baseURL, _ := url.Parse(config.Listen)
+	temp := config.DeepCopy()
+	baseURL, _ := url.Parse(temp.Listen)
 	return &Router{
-		BaseURL: baseURL,
-		// PublicDir: ,
-	}
+		BaseURL:   baseURL,
+		PublicDir: temp.PublicDir,
+		Branding:  temp.Branding,
+		McMode:    temp.McMode,
+	}, nil
 
 }
 

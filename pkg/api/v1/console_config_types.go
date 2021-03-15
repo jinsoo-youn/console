@@ -68,7 +68,7 @@ type Customization struct {
 	DocumentationBaseURL string `yaml:"documentationBaseURL,omitempty"`
 	CustomProductName    string `yaml:"customProductName,omitempty"`
 	CustomLogoFile       string `yaml:"customLogoFile,omitempty"`
-	McMode               string `yaml:"mcMode,omitempty"`
+	McMode               bool   `yaml:"mcMode,omitempty"`
 	ReleaseMode          string `yaml:"releaseMode,omitempty"`
 	PublicDir            string `yaml:"publicDir,omitempty"`
 }
