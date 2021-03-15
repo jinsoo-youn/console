@@ -1,7 +1,6 @@
 package server
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,7 +12,6 @@ import (
 	v1 "console/pkg/api/v1"
 	"console/pkg/auth"
 	"console/pkg/hypercloud/proxy"
-	"console/pkg/terminal"
 
 	"github.com/sirupsen/logrus"
 )
@@ -88,7 +86,6 @@ type Router struct {
 	KeycloakClientId string
 	// Proxy
 	K8sProxyConfig                   *proxy.Config
-	TerminalProxyTLSConfig           *tls.Config
 	PrometheusProxyConfig            *proxy.Config
 	ThanosProxyConfig                *proxy.Config
 	ThanosTenancyProxyConfig         *proxy.Config
@@ -115,19 +112,17 @@ func New(config *v1.Config) (*Router, error) {
 
 func (router *Router) Start() http.Handler {
 	standardMiddleware := alice.New(router.recoverPanic, router.logRequest, secureHeaders)
-	// tokenMiddleware := alice.New(router.tokenHandler)
+	tokenMiddleware := alice.New(router.tokenHandler)
 
 	gmux := mux.NewRouter()
 
 	handle := func(path string, handler http.Handler) {
 		gmux.Handle(proxy.SingleJoiningSlash(router.BaseURL.Path, path), handler)
 	}
-	handleFunc := func(path string, handler http.HandlerFunc) { handle(path, handler) }
 
 	authHandlerWithUser := func(hf func(*auth.User, http.ResponseWriter, *http.Request)) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			// if s.StaticUser.Username == "hypercloud" {
 			if router.ReleaseModeFlag {
 				token := r.Header.Clone().Get("Authorization")
 				temp := strings.Split(token, "Bearer ")
@@ -153,20 +148,13 @@ func (router *Router) Start() http.Handler {
 	}
 
 	k8sProxy := proxy.NewProxy(router.K8sProxyConfig)
-	gmux.PathPrefix(k8sProxyEndpoint).Handler(
-		http.StripPrefix(singleJoiningSlash(router.BaseURL.Path, k8sProxyEndpoint), authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+	handle(k8sProxyEndpoint, http.StripPrefix(
+		proxy.SingleJoiningSlash(router.BaseURL.Path, k8sProxyEndpoint),
+		tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 			k8sProxy.ServeHTTP(w, r)
 		})),
 	)
-
-	terminalProxy := terminal.NewProxy(
-		router.TerminalProxyTLSConfig,
-		router.K8sProxyConfig.TLSClientConfig,
-		router.K8sProxyConfig.Endpoint)
-
-	handle(terminal.ProxyEndpoint, authHandlerWithUser(terminalProxy.HandleProxy))
-	handleFunc(terminal.AvailableEndpoint, terminalProxy.HandleProxyEnabled)
 
 	if router.prometheusProxyEnabled() {
 		// Only proxy requests to the Prometheus API, not the UI.
@@ -235,8 +223,8 @@ func (router *Router) Start() http.Handler {
 		)
 	}
 
-	fileServer := http.FileServer(http.Dir(router.PublicDir))
-	gmux.PathPrefix("/static/").Handler(http.StripPrefix(singleJoiningSlash(router.BaseURL.Path, "/static/"), gzipHandler(fileServer)))
+	staticHandler := http.StripPrefix(proxy.SingleJoiningSlash(router.BaseURL.Path, "/static/"), http.FileServer(http.Dir(router.PublicDir)))
+	handle("/static/", gzipHandler(staticHandler))
 
 	return standardMiddleware.Then(gmux)
 

@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-type User struct {
-	ID       string
-	Username string
-	Token    string
-}
-
 func (router *Router) tokenHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if router.ReleaseModeFlag {
