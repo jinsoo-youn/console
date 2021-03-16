@@ -1,0 +1,17 @@
+.ceph-clone-pvc-modal__details {
+  margin-top: var(--pf-global--spacer--xl);
+}
+
+.ceph-clone-pvc-modal__details-section {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.ceph-clone-pvc-modal__pvc-details {
+  font-weight: var(--pf-global--FontWeight--bold);
+}
+
+
+
+/*# sourceMappingURL=ceph-storage-clone-pvc-modal.app-bundle.98157b43d8b2ff92e4cb.css.map*/

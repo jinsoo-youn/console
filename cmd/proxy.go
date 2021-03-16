@@ -16,9 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"console/pkg/hypercloud"
+	"net/http"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // proxyCmd represents the proxy command
@@ -32,7 +34,9 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("proxy called")
+		log.WithField("FILE", "proxy.go").Println("proxy called")
+		defaultServer = viper.Get("SERVER").(*hypercloud.HttpServer)
+		log.WithField("FILE", "proxy.go").Println(defaultServer.Server.(*http.Server).Addr)
 	},
 }
 

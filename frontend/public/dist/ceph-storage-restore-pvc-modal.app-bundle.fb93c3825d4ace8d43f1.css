@@ -1,0 +1,17 @@
+.ceph-restore-pvc-modal__details {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.ceph-restore-pvc-modal__details-section {
+  margin-top: var(--pf-global--spacer--xl);
+}
+
+.ceph-restore-pvc-modal__pvc-details {
+  font-weight: 600;
+}
+
+
+
+/*# sourceMappingURL=ceph-storage-restore-pvc-modal.app-bundle.fb93c3825d4ace8d43f1.css.map*/

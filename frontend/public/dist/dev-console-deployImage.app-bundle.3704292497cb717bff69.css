@@ -1,0 +1,17 @@
+.odc-resource-section__badge-wrapper {
+  margin-left: var(--pf-global--spacer--md);
+  position: relative;
+}
+
+.odc-resource-section__inline-badge {
+  bottom: -25%;
+  position: absolute;
+}
+
+.odc-resource-section__help-text {
+  padding-bottom: var(--pf-global--spacer--xs);
+}
+
+
+
+/*# sourceMappingURL=dev-console-deployImage.app-bundle.3704292497cb717bff69.css.map*/

@@ -11,11 +11,10 @@ import (
 
 	"github.com/openshift/library-go/pkg/crypto"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
-	plog = log.New().WithField("Test", "Test")
+	log = logrus.New().WithField("MODULE", "HYPERCLOUD")
 )
 
 type stoppableServer interface {
@@ -27,18 +26,17 @@ type HttpServer struct {
 	Server        stoppableServer
 	Switcher      *HTTPHandlerSwitcher
 	DefaultConfig *v1.ConsoleInfo
-	Log           *logrus.Logger
 }
 
 func New(config *v1.ConsoleInfo) (*HttpServer, error) {
-	plog.Info("plog test")
-	logger := log.StandardLogger()
-	// logger.SetFormatter(&log.JSONFormatter{})
-
-	logger.Infoln("New Server")
+	log.Infoln("New Server")
+	cfg := config.DeepCopy()
+	err := validateConfig(cfg)
+	if err != nil {
+		log.WithField("FILE", "server.go").Errorf("Failed to validateConfig %v \n", err)
+		return nil, err
+	}
 	httpSwitcher := NewHandlerSwitcher(http.NotFoundHandler())
-	// r := mux.NewRouter()
-	// httpSwitcher := NewHandlerSwitcher(r.NotFoundHandler)
 	handler := httpSwitcher
 	listenURL, err := url.Parse(config.Listen)
 	if err != nil {
@@ -57,33 +55,30 @@ func New(config *v1.ConsoleInfo) (*HttpServer, error) {
 	return &HttpServer{
 		Server:        serverHTTP,
 		Switcher:      httpSwitcher,
-		DefaultConfig: config,
-		Log:           logger,
+		DefaultConfig: cfg,
 	}, nil
 }
 
 func (s *HttpServer) Start(ctx context.Context) {
-
-	s.Log.Info("Start Server")
-
+	log.WithField("FILE", "server.go").Info("Start Server")
 	serverHTTP := s.Server.(*http.Server)
 	listenURL, err := url.Parse(s.DefaultConfig.Listen)
 	if err != nil {
-		s.Log.Println("failt to parsing URL")
+		log.WithField("FILE", "server.go").Println("failt to parsing URL")
 	}
-	s.Log.Info("Run Server using go func()")
+	log.WithField("FILE", "server.go").Info("Run Server using go routine")
 	csr := s.DefaultConfig.CertFile
 	key := s.DefaultConfig.KeyFile
 
 	// RUN default server
 	go func() {
-		s.Log.Infof("Binding to %s...", serverHTTP.Addr)
+		log.WithField("FILE", "server.go").Infof("Binding to %s...", serverHTTP.Addr)
 		if listenURL.Scheme == "https" {
-			s.Log.Info("using TLS")
-			s.Log.Fatal(serverHTTP.ListenAndServeTLS(csr, key))
+			log.WithField("FILE", "server.go").Info("using TLS")
+			log.WithField("FILE", "server.go").Fatal(serverHTTP.ListenAndServeTLS(csr, key))
 		} else {
-			s.Log.Info("not using TLS")
-			s.Log.Fatal(serverHTTP.ListenAndServe())
+			log.WithField("FILE", "server.go").Info("not using TLS")
+			log.WithField("FILE", "server.go").Fatal(serverHTTP.ListenAndServe())
 		}
 	}()
 }
@@ -113,4 +108,9 @@ func (h *HTTPHandlerSwitcher) GetHandler() (newHandler http.Handler) {
 // UpdateHandler safely updates the current http.ServeMux with a new one.
 func (h *HTTPHandlerSwitcher) UpdateHandler(newHandler http.Handler) {
 	h.handler.Set(newHandler)
+}
+
+func validateConfig(config *v1.ConsoleInfo) (err error) {
+
+	return nil
 }

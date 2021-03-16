@@ -31,9 +31,18 @@ func (router *Router) tokenHandler(next http.Handler) http.Handler {
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Prevent MIME sniffing (https://en.wikipedia.org/wiki/Content_sniffing)
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		// Ancient weak protection against reflected XSS (equivalent to CSP no unsafe-inline)
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
-		w.Header().Set("X-Frame-Options", "deny")
-
+		// Prevent clickjacking attacks involving iframes
+		w.Header().Set("X-Frame-Options", "allowall")
+		// Less information leakage about what domains we link to
+		w.Header().Set("X-DNS-Prefetch-Control", "off")
+		// Less information leakage about what domains we link to
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		// allow cross origin referce error
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -56,4 +65,22 @@ func (router *Router) recoverPanic(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func securityHeadersMiddleware(hdlr http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Prevent MIME sniffing (https://en.wikipedia.org/wiki/Content_sniffing)
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		// Ancient weak protection against reflected XSS (equivalent to CSP no unsafe-inline)
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		// Prevent clickjacking attacks involving iframes
+		w.Header().Set("X-Frame-Options", "allowall")
+		// Less information leakage about what domains we link to
+		w.Header().Set("X-DNS-Prefetch-Control", "off")
+		// Less information leakage about what domains we link to
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		// allow cross origin referce error
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		hdlr.ServeHTTP(w, r)
+	}
 }

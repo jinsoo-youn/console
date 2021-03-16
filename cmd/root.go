@@ -17,14 +17,12 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	v1 "console/pkg/api/v1"
 	"console/pkg/hypercloud"
 
 	homedir "github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -34,6 +32,7 @@ var cfg *v1.Config
 
 var (
 	defaultServer = &hypercloud.HttpServer{}
+	log           = logrus.New().WithField("MODULE", "CMD")
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -48,13 +47,18 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 
-		log.Println("root persistentPreRun called")
+		log.WithField("FILE", "root.go").Println("root persistentPreRun called")
 
-		log.Println(cfg)
+		log.WithField("FILE", "root.go").Printf("On ROOT: %v \n", *cfg)
+		err := v1.ValidateConfig(cfg)
+		if err != nil {
+			log.WithField("FILE", "root.go").Errorf("Validate Error: v1.ValidateConfig, line: 56 %v \n", err)
+		}
+
 		defaultServer, _ := hypercloud.New(&cfg.ConsoleInfo)
-		log.Printf("Check server config: %v \n", defaultServer.DefaultConfig)
+		log.WithField("FILE", "root.go").Printf("Check server config: %v \n", defaultServer.DefaultConfig)
 		defaultServer.Start(context.TODO())
-		viper.Set("testServer", defaultServer)
+		viper.Set("SERVER", defaultServer)
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -70,7 +74,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	log.Println("root init func called")
-	log.Printf("%v \n", cfgFile)
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -83,10 +86,10 @@ func init() {
 	rootCmd.Flags().StringP("certFile", "", "./cert/ca.csr", "Cert file for TLS server")
 	rootCmd.Flags().StringP("keyFile", "", "./cert/ca.key", "Key file for TLS server")
 
-	viper.BindPFlags(rootCmd.Flags())
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	err := viper.BindPFlags(rootCmd.Flags())
+	if err != nil {
+		log.WithField("FILE", "root.go").Errorf("error: viper.BindPFlags, line: 88 %v \n", err)
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -107,10 +110,10 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 	// viper.Set("test", "test is ok ^_^")
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		log.Error(fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed()))
+	if err := viper.ReadInConfig(); err != nil {
+		log.WithField("FILE", "root.go").Errorf("error: viper.ReadInConfig(), line: 111 %v \n", err)
 	}
 
 	viper.Unmarshal(&cfg)
-	log.Printf("%v \n", cfg)
+	log.WithField("FILE", "root.go").Printf("%v \n", cfg)
 }

@@ -1,0 +1,131 @@
+.upload-component {
+  display: inline-flex;
+  cursor: grab;
+}
+
+.input-btn {
+  display: inline-flex;
+  cursor: grab;
+}
+
+.custom-input-btn {
+  flex-grow: 10;
+}
+
+.upload-btn__input {
+  position: absolute;
+  opacity: 0;
+  border: none;
+  min-height: 2.5em;
+  max-width: 5.5em;
+  cursor: grab;
+}
+
+.upload-component__textInput {
+  color: var(--pf-global--Color--dark-200);
+}
+
+#inputButton::-webkit-file-upload-button {
+  cursor: grab;
+}
+
+
+.im--light {
+  color: var(--pf-global--Color--200);
+}
+
+.im-install-page {
+  margin-top: var(--pf-global--spacer--lg);
+  margin-bottom: var(--pf-global--spacer--md);
+}
+
+.im-install-page--error {
+  color: var(--pf-chart-global--danger--Color--100);
+}
+
+.im-install-page--margin-top {
+  margin-top: var(--pf-global--spacer--sm);
+}
+
+.im-install-page__form {
+  margin-top: var(--pf-global--spacer--md);
+}
+
+.im-install-page__sub-header {
+  margin-bottom: var(--pf-global--spacer--md);
+}
+
+.im-install-page-form__text-area {
+  min-height: 8em;
+}
+
+.im-install-page-sub-header__title {
+  display: flex;
+  justify-content: space-between;
+}
+
+.im-install-page__input-box {
+  background-color: var(--pf-global--disabled-color--200);
+  color: var(--pf-global--disabled-color--100);
+}
+
+.im-install-page__text-box {
+  min-height: 15em;
+  color: var(--pf-global--palette--black-500);
+  background-color: var(--pf-global--BackgroundColor--light-100) !important;
+  border: var(--pf-global--BorderWidth--sm) solid var(--pf-global--BorderColor--100) !important;
+}
+
+
+.ceph-node-list__max-height {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.ceph-ocs-install__alert {
+  margin-top: 1em;
+}
+
+.ceph-ocs-install__ocs-service-capacity {
+  margin-top: var(--pf-global--spacer--md);
+  margin-bottom: var(--pf-global--spacer--3xl);
+}
+
+.ceph-ocs-install__ocs-service-capacity--dropdown {
+  width: 15rem;
+}
+
+.ceph-ocs-install__ocs-service-capacity--help-text {
+  font-size: var(--pf-global--FontSize--sm);
+  margin-bottom: 0;
+}
+
+.ceph-ocs-install__ocs-service-capacity--title {
+  font-weight: var(--pf-global--FontWeight--bold);
+  font-size: var(--pf-global--FontSize--md);
+}
+
+.ceph-install-select-mode {
+  padding: var(--pf-global--spacer--sm) 0;
+}
+
+
+.ceph-install__select-mode {
+  margin-bottom: var(--pf-global--spacer--lg);
+}
+
+.ceph-install-select-mode__title {
+  margin-bottom: var(--pf-global--spacer--md);
+}
+
+.ceph-install__select-node__title {
+  margin-top: var(--pf-global--spacer--lg);
+}
+
+.ceph-install--no-margin>input {
+  margin: auto;
+}
+
+
+
+/*# sourceMappingURL=install-page.app-bundle.f510878cd7175c8728b0.css.map*/

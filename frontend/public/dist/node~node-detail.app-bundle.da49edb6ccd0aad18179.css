@@ -1,0 +1,18 @@
+.co-node-health__popup-alert {
+  margin-top: var(--pf-global--spacer--md);
+}
+
+.co-node-health__status {
+  height: 100%;
+  align-items: center;
+}
+
+.co-node-health__status .co-icon-and-text__icon {
+  margin-right: var(--pf-global--spacer--md);
+  top: 0;
+  font-size: 1.2rem;
+}
+
+
+
+/*# sourceMappingURL=node~node-detail.app-bundle.da49edb6ccd0aad18179.css.map*/

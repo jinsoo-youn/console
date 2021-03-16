@@ -1,30 +1,30 @@
 apiVersion: console.hypercloud.io/v1beta1
 kind: ConsoleConfig
 consoleInfo:
-  listen: http://0.0.0.0:3001
-  baseAddress: "jinsoo-home-test"
+  listen: https://172.24.62.241:9000
+  baseAddress: "https://172.24.62.241:9000"
   basePath: "/"
-  certFile: ./home/ca.csr
-  keyFile: ./home/ca.key
-  redirectPort: 9090
+  certFile: "tls/tls.crt"
+  keyFile: "tls/tls.key"
+  redirectPort: 0
 auth:
-  keycloakClientId: console-oauth-client
-  keycloakRealm: hypercloud
-  keycloakAuthURL: https://127.0.0.1:8443
+  keycloakClientId: ck-integration-hypercloud5
+  keycloakRealm: tmax
+  keycloakAuthURL: https://hyperauth.org/auth/
 clusterInfo:
-  masterEndpoint: https://127.0.0.1:8443
-  hypercloudEndpoint: "h-endpoint"
-  multiHypercloudEndpoint: "mh-endpoint"
-  webhookEndpoint: "webhook"
-  alertmanagerEndpoint: "alertmanager"
-  grafanaEndpoint: "grafana" 
-  prometheusEndpoint: "prometheus"
-  thanosEndpoint: "thanos"
+  k8sEndpoint: https://192.168.6.171:6443
+  hypercloudEndpoint: ""
+  multiHypercloudEndpoint: ""
+  webhookEndpoint: ""
+  alertmanagerEndpoint: ""
+  grafanaEndpoint: "" 
+  prometheusEndpoint: "http://172.23.4.201:30159/api"
+  thanosEndpoint: ""
 customization: 
-  branding: "hypercloud"
-  mcMode: "true"
-  releaseMode: "true"
-  customProductName: "hypercloud"
-  customLogoFile: "./frontend/logo.jpg"
-  publicDir: "./test/test"
+  branding: ""
+  mcMode: true
+  releaseMode: true
+  customProductName: ""
+  customLogoFile: ""
+  publicDir: "./frontend/public/dist"
   

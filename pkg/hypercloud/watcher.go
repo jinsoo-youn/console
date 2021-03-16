@@ -11,7 +11,6 @@ import (
 
 	"github.com/eapache/channels"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 type ConfigWatcher struct {
@@ -60,7 +59,7 @@ func (c *ConfigWatcher) Stop() {
 // e.g) switch http handler function when new configuration is provided.
 // See traefik.go , line 278
 func (c *ConfigWatcher) AddListener(listener func(dynamic.Configuration)) {
-	log.StandardLogger().Infof("*************************** Called AddListener in order to put func(dynamic.Configuration *****************************")
+	log.Info("Start AddListener")
 	if c.configurationListeners == nil {
 		c.configurationListeners = make([]func(dynamic.Configuration), 0)
 	}
@@ -68,14 +67,14 @@ func (c *ConfigWatcher) AddListener(listener func(dynamic.Configuration)) {
 }
 
 func (c *ConfigWatcher) startProvider() {
-	logger := log.StandardLogger()
+	logger := log
 
 	jsonConf, err := json.Marshal(c.provider)
 	if err != nil {
 		logger.Debugf("Unable to marshal provider configuration %T: %v", c.provider, err)
 	}
 
-	logger.Infof("Starting provider %T %s", c.provider, jsonConf)
+	logger.Infof("Star provider %T %s", c.provider, jsonConf)
 	currentProvider := c.provider
 
 	safe.Go(func() {
@@ -100,12 +99,12 @@ func (c *ConfigWatcher) listenProviders(ctx context.Context) {
 			}
 
 			if configMsg.Configuration == nil {
-				log.StandardLogger().WithField("providerName", configMsg.ProviderName).
+				log.WithField("providerName", configMsg.ProviderName).
 					Debug("Received nil configuration from provider, skipping.")
 				return
 			}
 
-			log.StandardLogger().WithField("providerName", configMsg.ProviderName).Infof("Received from Provider \"%v\" :  %v \n", configMsg.ProviderName, configMsg.Configuration.Routers)
+			log.WithField("providerName", configMsg.ProviderName).Infof("Received from Provider \"%v\" :  %v \n", configMsg.ProviderName, configMsg.Configuration.Routers)
 			c.preLoadConfiguration(configMsg)
 		}
 	}
@@ -120,41 +119,38 @@ func (c *ConfigWatcher) listenConfigurations(ctx context.Context) {
 			if !ok || configMsg.Configuration == nil {
 				return
 			}
-			log.StandardLogger().Infof("!!!!!!!!!!!!11configMsg from c.configValidatedChan %v, %v", configMsg.ProviderName, configMsg.Configuration.Routers)
+			log.Infof("CHECK: ConfigMsg from c.configValidatedChan %v, %v", configMsg.ProviderName, configMsg.Configuration.Routers)
 			c.loadMessage(configMsg)
 		}
 	}
 }
 
 func (c *ConfigWatcher) loadMessage(configMsg dynamic.Message) {
-	log.StandardLogger().Infof("@@@@@@@@@@@@@@@@@@@ configMsg : %T, %v \n", configMsg.ProviderName, configMsg.Configuration.Routers)
+	log.Infof("START loadMessage --> configMsg : %T, %v \n", configMsg.ProviderName, configMsg.Configuration.Routers)
 	currentconfigurations := c.currentConfigurations.Get().(dynamic.Configurations)
 	for name, value := range currentconfigurations {
-		log.StandardLogger().Infof("show currentconfigurations %v , %v \n", name, value)
+		log.Infof("CHECK currentconfigurations %v , %v \n", name, value)
 	}
 	//Copy configurations to new map so we don't change current if Loadconfig fails
 	newConfigurations := currentconfigurations.DeepCopy()
 	newConfigurations[configMsg.ProviderName] = configMsg.Configuration
 	c.currentConfigurations.Set(newConfigurations)
 	for name, value := range newConfigurations {
-		log.StandardLogger().Infof("show New configurations %v , %v \n", name, value)
+		log.Infof("CHECK New configurations %v , %v \n", name, value)
 	}
-	log.StandardLogger().Info("[Before] Call listener func !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	conf := mergeConfiguration(newConfigurations)
-	log.StandardLogger().Infof("Check test value : %v \n", conf.Routers)
 	for name, value := range conf.Routers {
 		log.Infof("check conf out listener func : %v, %v", name, value)
 	}
 
 	for _, listener := range c.configurationListeners {
-		log.StandardLogger().Info("[ING] Call listener func !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		listener(conf)
 	}
 }
 
 func (c *ConfigWatcher) preLoadConfiguration(configMsg dynamic.Message) {
-	logger := log.StandardLogger().WithField("providerName", configMsg.ProviderName)
-	if log.GetLevel() == logrus.DebugLevel {
+	logger := log.WithField("providerName", configMsg.ProviderName)
+	if logrus.GetLevel() == logrus.DebugLevel {
 		copyConf := configMsg.Configuration.DeepCopy()
 
 		jsonConf, err := json.Marshal(copyConf)
@@ -212,13 +208,12 @@ func (c *ConfigWatcher) providerConfigReload(ctx context.Context, publish chan<-
 		case <-ctx.Done():
 			return
 		case nextConfig := <-in:
-			log.StandardLogger().WithField("providerName", nextConfig.ProviderName).Infof("Check nextConfig form <-in  : %v , %v", nextConfig.ProviderName, nextConfig.Configuration.Routers)
+			log.WithField("providerName", nextConfig.ProviderName).Infof("Check nextConfig form <-in  : %v , %v", nextConfig.ProviderName, nextConfig.Configuration.Routers)
 			if reflect.DeepEqual(previousConfig, nextConfig) {
-				logger := log.StandardLogger().WithField("providerName", nextConfig.ProviderName)
+				logger := log.WithField("providerName", nextConfig.ProviderName)
 				logger.Info("Skipping same configuration")
 				continue
 			}
-			log.StandardLogger().Infof("check temp config !!!!!!!! %v, %v", nextConfig.ProviderName, nextConfig.Configuration.Routers)
 			previousConfig = *nextConfig.DeepCopy()
 			ring.In() <- *nextConfig.DeepCopy()
 		}

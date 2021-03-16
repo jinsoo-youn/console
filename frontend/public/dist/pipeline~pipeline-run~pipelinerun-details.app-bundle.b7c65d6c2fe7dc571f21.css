@@ -1,0 +1,134 @@
+.odc-logs {
+  padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md);
+}
+
+.odc-logs__name {
+  font-weight: var(--pf-global--FontWeight--bold);
+  text-transform: uppercase;
+}
+
+.odc-logs__content {
+  padding-left: var(--pf-global--spacer--md);
+}
+
+
+.odc-multi-stream-logs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+}
+
+.odc-multi-stream-logs--fullscreen {
+  background-color: var(--pf-global--BackgroundColor--100);
+  padding: var(--pf-global--spacer--sm);
+}
+
+.odc-multi-stream-logs__icon {
+  margin-right: var(--pf-global--spacer--xs);
+}
+
+.odc-multi-stream-logs__divider {
+  color: var(--pf-global--palette--black-600);
+  margin: 0 var(--pf-global--spacer--sm);
+}
+
+.odc-multi-stream-logs__button {
+  margin-right: 0;
+}
+
+.odc-multi-stream-logs__container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: var(--pf-global--palette--black-1000);
+  color: var(--pf-global--BackgroundColor--100);
+  font-family: Menlo, Monaco, 'Courier New', monospace;
+  overflow-y: scroll;
+  position: relative;
+}
+
+.odc-multi-stream-logs__container__logs {
+  position: absolute;
+  width: 100%;
+}
+
+.odc-multi-stream-logs__taskName {
+  background-color: var(--pf-global--BackgroundColor--dark-300);
+  padding: var(--pf-global--spacer--sm) var(--pf-global--spacer--md);
+  color: var(--pf-global--BackgroundColor--100);
+}
+
+.odc-multi-stream-logs__taskName__loading-indicator {
+  margin-left: var(--pf-global--spacer--sm);
+}
+
+
+.odc-pipeline-run-logs {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  padding: var(--pf-global--spacer--xl) 0;
+}
+
+.odc-pipeline-run-logs__nav {
+  list-style-type: none;
+}
+
+.odc-pipeline-run-logs__nav .pf-c-nav__link {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.odc-pipeline-run-logs__nav .co-icon-and-text {
+  position: relative;
+  top: 0.35em;
+}
+
+.odc-pipeline-run-logs__namespan {
+  margin-left: var(--pf-global--spacer--sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.odc-pipeline-run-logs__log {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  height: calc(100% - var(--pf-global--spacer--lg));
+  background: #999999;
+  color: var(--pf-global--BackgroundColor--100);
+}
+
+.odc-pipeline-run-logs__tasklist {
+  max-width: 30%;
+  margin-top: var(--pf-global--spacer--lg);
+  padding: 0px;
+  padding-left: var(--pf-global--spacer--xl);
+}
+
+.odc-pipeline-run-logs__container {
+  flex: 1;
+  padding-left: var(--pf-global--spacer--xl);
+  padding-right: var(--pf-global--spacer--xl);
+}
+
+.odc-pipeline-run-logs__container .co-m-pane__body {
+  padding: 0px;
+}
+
+.odc-pipeline-run-logs__taskName {
+  background-color: #555555;
+  padding: 8px 16px;
+  color: white;
+}
+
+.odc-pipeline-run-logs__message {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+
+/*# sourceMappingURL=pipeline~pipeline-run~pipelinerun-details.app-bundle.b7c65d6c2fe7dc571f21.css.map*/

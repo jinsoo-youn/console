@@ -17,11 +17,11 @@ package cmd
 
 import (
 	"console/pkg/hypercloud"
+	"console/pkg/server"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -39,28 +39,28 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("server called")
 
-		fmt.Println(cfg)
+		fmt.Printf("On SERVER: %v \n", *cfg)
 
-		// defaultServer, _ := hypercloud.New(&cfg.ConsoleInfo)
-		// fmt.Printf("Check server config: %v \n", defaultServer.DefaultConfig)
-		// defaultServer.Start(context.TODO())
+		fmt.Println("sleep 3 sec")
+		time.Sleep(time.Second * 3)
 
-		fmt.Println("sleep 10 sec")
-		time.Sleep(time.Second * 10)
-		r := mux.NewRouter()
-		r.HandleFunc("/", home)
+		ser, _ := server.New(cfg)
+		r := ser.Start()
+
+		// r := mux.NewRouter()
+		// r.HandleFunc("/", home)
 		fmt.Println("changing router")
-		defaultServer = viper.Get("testServer").(*hypercloud.HttpServer)
+		defaultServer = viper.Get("SERVER").(*hypercloud.HttpServer)
 		defaultServer.Switcher.UpdateHandler(r)
 
-		fmt.Println("sleep 10 sec")
-		time.Sleep(time.Second * 10)
-		fmt.Println("changing router based on MAP")
-		r.HandleFunc("/test/", func(w http.ResponseWriter,
-			r *http.Request) {
-			w.Write([]byte("test"))
-		})
-		defaultServer.Switcher.UpdateHandler(r)
+		// fmt.Println("sleep 10 sec")
+		// time.Sleep(time.Second * 10)
+		// fmt.Println("changing router based on MAP")
+		// // r.HandleFunc("/test/", func(w http.ResponseWriter,
+		// // 	r *http.Request) {
+		// // 	w.Write([]byte("test"))
+		// // })
+		// defaultServer.Switcher.UpdateHandler(r)
 	},
 }
 
