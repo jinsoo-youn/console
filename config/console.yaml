@@ -1,8 +1,8 @@
 apiVersion: console.hypercloud.io/v1beta1
 kind: ConsoleConfig
 consoleInfo:
-  listen: https://172.24.62.241:9000
-  baseAddress: "https://172.24.62.241:9000"
+  listen: https://172.30.246.128:9000
+  baseAddress: "https://172.30.246.128:9000"
   basePath: "/"
   certFile: "tls/tls.crt"
   keyFile: "tls/tls.key"
@@ -21,10 +21,10 @@ clusterInfo:
   prometheusEndpoint: "http://172.23.4.201:30159/api"
   thanosEndpoint: ""
 customization: 
-  branding: ""
-  mcMode: true
+  # branding: ""
+  mcMode: false
   releaseMode: true
-  customProductName: ""
-  customLogoFile: ""
+  # customProductName: ""
+  # customLogoFile: ""
   publicDir: "./frontend/public/dist"
   

@@ -25,8 +25,8 @@ import (
 
 // proxyCmd represents the proxy command
 var proxyCmd = &cobra.Command{
-	Use:   "proxy",
-	Short: "Run Reverse Proxy Server",
+	Use:   "server",
+	Short: "Run Web Server Only Serving Static Contents",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 

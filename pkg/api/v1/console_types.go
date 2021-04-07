@@ -64,11 +64,11 @@ type ClusterInfo struct {
 
 // +k8s:deepcopy-gen=true
 type Customization struct {
-	Branding             string `yaml:"branding,omitempty"`
-	DocumentationBaseURL string `yaml:"documentationBaseURL,omitempty"`
-	CustomProductName    string `yaml:"customProductName,omitempty"`
-	CustomLogoFile       string `yaml:"customLogoFile,omitempty"`
-	McMode               bool   `yaml:"mcMode,omitempty"`
-	ReleaseMode          bool   `yaml:"releaseMode,omitempty"`
-	PublicDir            string `yaml:"publicDir,omitempty"`
+	// Branding             string `yaml:"branding,omitempty"`
+	// DocumentationBaseURL string `yaml:"documentationBaseURL,omitempty"`
+	// CustomProductName    string `yaml:"customProductName,omitempty"`
+	// CustomLogoFile       string `yaml:"customLogoFile,omitempty"`
+	McMode      bool   `yaml:"mcMode,omitempty"`
+	ReleaseMode bool   `yaml:"releaseMode,omitempty"`
+	PublicDir   string `yaml:"publicDir,omitempty"`
 }

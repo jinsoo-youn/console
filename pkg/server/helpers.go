@@ -116,7 +116,7 @@ const (
 	hypercloudAlertManagerEndpoint = "http://alertmanager-main.monitoring.svc:9093/api"
 
 	// Well-known location of metering service for hypercloud. This is only accessible in-cluster.
-	hypercloudMeteringEndpoint = "reporting-operator.hypercloud-metering.svc:8080"
+	// hypercloudMeteringEndpoint = "reporting-operator.hypercloud-metering.svc:8080"
 
 	// Well-known location of hypercloud-server for hypercloud. This is only accessible in-clsuter.
 	// TODO: url 입력
@@ -131,7 +131,7 @@ const (
 	// Well-known location of garafana for hypercloud
 	grafanaEndpoint = "http://grafana.monitoring.svc:3000/api/grafana/"
 	// Well-known location of kibana for hypercloud
-	kibanaEndpoint = "https://opendistro-kibana.efk.svc.cluster.local:5601/api/kibana/"
+	kibanaEndpoint = "http://kibana.kube-logging.svc.cluster.local:5601/api/kibana/"
 )
 
 func validateConfig(config *v1.Config) (err error) {
@@ -244,13 +244,13 @@ func createRouter(config *v1.Config) (*Router, error) {
 			Token:    k8sAuthServiceAccountBearerToken,
 		},
 
-		GOARCH:            runtime.GOARCH,
-		GOOS:              runtime.GOOS,
-		Branding:          config.Branding,
-		CustomProductName: config.CustomProductName,
-		CustomLogoFile:    config.CustomLogoFile,
-		McMode:            config.McMode,
-		ReleaseModeFlag:   config.ReleaseMode,
+		GOARCH: runtime.GOARCH,
+		GOOS:   runtime.GOOS,
+		// Branding:          config.Branding,
+		// CustomProductName: config.CustomProductName,
+		// CustomLogoFile:    config.CustomLogoFile,
+		McMode:          config.McMode,
+		ReleaseModeFlag: config.ReleaseMode,
 
 		KeycloakRealm:    config.KeycloakRealm,
 		KeycloakAuthURL:  config.KeycloakAuthURL,

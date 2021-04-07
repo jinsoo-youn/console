@@ -7,14 +7,15 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strings"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 
 	v1 "console/pkg/api/v1"
 	"console/pkg/auth"
 	"console/pkg/hypercloud/proxy"
+	"console/pkg/version"
 
 	"github.com/sirupsen/logrus"
 )
@@ -26,17 +27,10 @@ var (
 const (
 	indexPageTemplateName = "index.html"
 
-	authLoginEndpoint         = "/auth/login"
-	AuthLoginCallbackEndpoint = "/auth/callback"
-	AuthLoginSuccessEndpoint  = "/"
-	AuthLoginErrorEndpoint    = "/error"
-	authLogoutEndpoint        = "/auth/logout"
-
 	k8sProxyPath               = "/api/kubernetes/"
 	prometheusProxyPath        = "/api/prometheus"
 	prometheusTenancyProxyPath = "/api/prometheus-tenancy"
 	alertManagerProxyPath      = "/api/alertmanager"
-	customLogoPath             = "/custom-logo"
 
 	grafanaProxyPath          = "/api/grafana/"
 	kialiProxyPath            = "/api/kiali/"
@@ -55,24 +49,18 @@ type jsGlobals struct {
 	PrometheusTenancyBaseURL string `json:"prometheusTenancyBaseURL"`
 	AlertManagerBaseURL      string `json:"alertManagerBaseURL"`
 
-	CustomProductName string `json:"customProductName"`
-	Branding          string `json:"branding"`
-
 	GrafanaPublicURL    string `json:"grafanaPublicURL"`
 	PrometheusPublicURL string `json:"prometheusPublicURL"`
 	ThanosPublicURL     string `json:"thanosPublicURL"`
-	LoadTestFactor      int    `json:"loadTestFactor"`
-	GOARCH              string `json:"GOARCH"`
-	GOOS                string `json:"GOOS"`
+
+	GOARCH string `json:"GOARCH"`
+	GOOS   string `json:"GOOS"`
 
 	KeycloakRealm    string `json:keycloakRealm`
 	KeycloakAuthURL  string `json:keycloakAuthURL`
 	KeycloakClientId string `json:keycloakClientId`
 
-	McMode         bool   `json:mcMode`
-	McModeFile     string `json:mcModeFile`
-	McModeOperator bool   `json:mcModeOperator`
-
+	McMode          bool `json:mcMode`
 	ReleaseModeFlag bool `json:"releaseModeFlag"`
 }
 
@@ -84,11 +72,11 @@ type Router struct {
 	GOARCH string
 	GOOS   string
 	// customization
-	Branding          string
-	CustomProductName string
-	CustomLogoFile    string
-	McMode            bool
-	ReleaseModeFlag   bool
+	// Branding          string
+	// CustomProductName string
+	// CustomLogoFile    string
+	McMode          bool
+	ReleaseModeFlag bool
 	// Keycloak (Hyperauth) information for logging to console
 	KeycloakRealm    string
 	KeycloakAuthURL  string
@@ -116,56 +104,19 @@ func New(cfg *v1.Config) (*Router, error) {
 }
 
 func (router *Router) Start() http.Handler {
-	standardMiddleware := alice.New(router.recoverPanic, router.logRequest, secureHeaders)
-	_ = alice.New(router.recoverPanic, router.logRequest, secureHeaders)
-	// tokenMiddleware := alice.New(router.tokenHandler)
-	_ = alice.New(router.tokenHandler)
+	standardMiddleware := alice.New(router.recoverPanic, router.logRequest, secureHeaders, handlers.ProxyHeaders)
+	tokenMiddleware := alice.New(router.tokenHandler)
 
 	gmux := mux.NewRouter()
-
-	// gmux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.WriteHeader(http.StatusOK)
-	// 	// w.Write([]byte("not found"))
-	// })
-	// gmux.HandleFunc("/load-test.sw.js", func(w http.ResponseWriter, r *http.Request) {
-	// 	http.ServeFile(w, r, path.Join(router.PublicDir, "load-test.sw.js"))
-	// })
 
 	handle := func(path string, handler http.Handler) {
 		gmux.PathPrefix(proxy.SingleJoiningSlash(router.BaseURL.Path, path)).Handler(handler)
 	}
 
-	authHandlerWithUser := func(hf func(*auth.User, http.ResponseWriter, *http.Request)) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.Infof("CHECK RELEASE_MODE : %v", router.ReleaseModeFlag)
-			if router.ReleaseModeFlag {
-				token := r.Header.Clone().Get("Authorization")
-				temp := strings.Split(token, "Bearer ")
-				if len(temp) > 1 {
-					token = temp[1]
-				} else {
-					token = temp[0]
-				}
-				// plog.Infof("check token is on : %v", token)
-				router.StaticUser.Token = token
-
-				// NOTE: query에 token 정보가 있을 시 해당 token으로 설정
-				queryToken := r.URL.Query().Get("token")
-				if queryToken != "" && token == "" {
-					r.URL.Query().Del("token")
-					router.StaticUser.Token = queryToken
-				}
-
-			}
-
-			hf(router.StaticUser, w, r)
-		})
-	}
-
 	k8sProxy := proxy.NewProxy(router.K8sProxyConfig)
 	handle(k8sProxyPath, http.StripPrefix(
 		proxy.SingleJoiningSlash(router.BaseURL.Path, k8sProxyPath),
-		authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+		tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 			r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 			k8sProxy.ServeHTTP(w, r)
 		})),
@@ -192,21 +143,21 @@ func (router *Router) Start() http.Handler {
 		// global label, query, and query_range requests have to be proxied via thanos
 		handle(querySourcePath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, targetAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				thanosProxy.ServeHTTP(w, r)
 			})),
 		)
 		handle(queryRangeSourcePath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, targetAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				thanosProxy.ServeHTTP(w, r)
 			})),
 		)
 		handle(labelSourcePath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, targetAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				thanosProxy.ServeHTTP(w, r)
 			})),
@@ -215,7 +166,7 @@ func (router *Router) Start() http.Handler {
 		// alerting (rules) have to be proxied via cluster monitoring prometheus
 		handle(rulesSourcePath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, targetAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				prometheusProxy.ServeHTTP(w, r)
 			})),
@@ -224,14 +175,14 @@ func (router *Router) Start() http.Handler {
 		// tenancy queries and query ranges have to be proxied via thanos
 		handle(tenancyQuerySourcePath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, tenancyTargetAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				thanosTenancyProxy.ServeHTTP(w, r)
 			})),
 		)
 		handle(tenancyQueryRangeSourcePath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, tenancyTargetAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				thanosTenancyProxy.ServeHTTP(w, r)
 			})),
@@ -243,35 +194,9 @@ func (router *Router) Start() http.Handler {
 		alertManagerProxy := proxy.NewProxy(router.AlertManagerProxyConfig)
 		handle(alertManagerProxyAPIPath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, alertManagerProxyAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				alertManagerProxy.ServeHTTP(w, r)
-			})),
-		)
-	}
-
-	// NOTE: grafa proxy
-	if router.grafanaEnable() {
-		grafanaProxyAPIPath := grafanaProxyPath
-		grafanaProxy := proxy.NewProxy(router.GrafanaProxyConfig)
-		handle(grafanaProxyAPIPath, http.StripPrefix(
-			proxy.SingleJoiningSlash(router.BaseURL.Path, grafanaProxyAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
-				// r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
-				// s.Staticrouter.StaticUser.Token = r.Header.Clone().Get("Authorization")
-				grafanaProxy.ServeHTTP(w, r)
-			})),
-		)
-	}
-
-	// NOTE: kiali proxy
-	if router.kialiEnable() {
-		kialiProxyAPIPath := kialiProxyPath
-		kialiProxy := proxy.NewProxy(router.KialiProxyConfig)
-		handle(kialiProxyAPIPath, http.StripPrefix(
-			proxy.SingleJoiningSlash(router.BaseURL.Path, kialiProxyAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
-				kialiProxy.ServeHTTP(w, r)
 			})),
 		)
 	}
@@ -282,7 +207,7 @@ func (router *Router) Start() http.Handler {
 		webhookProxy := proxy.NewProxy(router.WebhookProxyConfig)
 		handle(webhookProxyAPIPath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, webhookProxyAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				webhookProxy.ServeHTTP(w, r)
 			})),
@@ -295,7 +220,7 @@ func (router *Router) Start() http.Handler {
 		hypercloudServerProxy := proxy.NewProxy(router.HypercloudServerProxyConfig)
 		handle(hypercloudServerProxyAPIPath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, hypercloudServerProxyAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				hypercloudServerProxy.ServeHTTP(w, r)
 			})),
@@ -308,9 +233,33 @@ func (router *Router) Start() http.Handler {
 		multiHypercloudServerProxy := proxy.NewProxy(router.MultiHypercloudServerProxyConfig)
 		handle(multiHypercloudServerProxyAPIPath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, multiHypercloudServerProxyAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				multiHypercloudServerProxy.ServeHTTP(w, r)
+			})),
+		)
+	}
+
+	// NOTE: grafa proxy
+	if router.grafanaEnable() {
+		grafanaProxyAPIPath := grafanaProxyPath
+		grafanaProxy := proxy.NewProxy(router.GrafanaProxyConfig)
+		handle(grafanaProxyAPIPath, http.StripPrefix(
+			proxy.SingleJoiningSlash(router.BaseURL.Path, grafanaProxyAPIPath),
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
+				grafanaProxy.ServeHTTP(w, r)
+			})),
+		)
+	}
+
+	// NOTE: kiali proxy
+	if router.kialiEnable() {
+		kialiProxyAPIPath := kialiProxyPath
+		kialiProxy := proxy.NewProxy(router.KialiProxyConfig)
+		handle(kialiProxyAPIPath, http.StripPrefix(
+			proxy.SingleJoiningSlash(router.BaseURL.Path, kialiProxyAPIPath),
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
+				kialiProxy.ServeHTTP(w, r)
 			})),
 		)
 	}
@@ -321,7 +270,7 @@ func (router *Router) Start() http.Handler {
 		kibanaProxy := proxy.NewProxy(router.KibanaProxyConfig)
 		handle(kibanaAPIPath, http.StripPrefix(
 			proxy.SingleJoiningSlash(router.BaseURL.Path, kibanaAPIPath),
-			authHandlerWithUser(func(user *auth.User, w http.ResponseWriter, r *http.Request) {
+			tokenMiddleware.ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", router.StaticUser.Token))
 				kibanaProxy.ServeHTTP(w, r)
 			})),
@@ -348,21 +297,11 @@ func (router *Router) Start() http.Handler {
 
 func (s *Router) indexHandler(w http.ResponseWriter, r *http.Request) {
 	jsg := &jsGlobals{
-		ConsoleVersion: "1.1.1",
-		// AuthDisabled:          s.authDisabled(),
-		// KubectlClientID:       s.KubectlClientID,
-		BasePath: s.BaseURL.Path,
-		// LoginURL:              proxy.SingleJoiningSlash(s.BaseURL.String(), authLoginEndpoint),
-		// LoginSuccessURL:       proxy.SingleJoiningSlash(s.BaseURL.String(), AuthLoginSuccessEndpoint),
-		// LoginErrorURL:         proxy.SingleJoiningSlash(s.BaseURL.String(), AuthLoginErrorEndpoint),
-		// LogoutURL:             proxy.SingleJoiningSlash(s.BaseURL.String(), authLogoutEndpoint),
-		// LogoutRedirect:        s.LogoutRedirect.String(),
-		KubeAPIServerURL:  s.K8sProxyConfig.Endpoint.String(),
-		Branding:          s.Branding,
-		CustomProductName: s.CustomProductName,
-		// StatuspageID:          s.StatuspageID,
-		// DocumentationBaseURL:  s.DocumentationBaseURL.String(),
-		// AlertManagerPublicURL: s.AlertManagerPublicURL.String(),
+		ConsoleVersion:   version.Version,
+		BasePath:         s.BaseURL.Path,
+		KubeAPIServerURL: s.K8sProxyConfig.Endpoint.String(),
+		// Branding:          s.Branding,
+		// CustomProductName: s.CustomProductName,
 
 		GOARCH: s.GOARCH,
 		GOOS:   s.GOOS,
@@ -372,16 +311,9 @@ func (s *Router) indexHandler(w http.ResponseWriter, r *http.Request) {
 		KeycloakAuthURL:  s.KeycloakAuthURL,
 		KeycloakClientId: s.KeycloakClientId,
 
-		McMode: s.McMode,
-
+		McMode:          s.McMode,
 		ReleaseModeFlag: s.ReleaseModeFlag,
 	}
-
-	// if !s.authDisabled() {
-	// specialAuthURLs := s.Auther.GetSpecialURLs()
-	// jsg.RequestTokenURL = specialAuthURLs.RequestToken
-	// jsg.KubeAdminLogoutURL = specialAuthURLs.KubeAdminLogout
-	// }
 
 	if s.prometheusProxyEnabled() {
 		jsg.PrometheusBaseURL = proxy.SingleJoiningSlash(s.BaseURL.Path, prometheusProxyPath)
