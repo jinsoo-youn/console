@@ -41,7 +41,7 @@ var rootCmd = &cobra.Command{
 	Short: "The hypercloud console is like a API gateway for hypercloud",
 	Long:  `The hypercloud console is like a API gateway for hypercloud`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		log.WithField("FILE", "root.go").Println("root persistentPreRun called")
+		log.WithField("FILE", "root.go").Println("CALL: root persistentPreRun")
 		log.WithField("FILE", "root.go").Printf("On ROOT: %v \n", *cfg)
 		err := v1.ValidateConfig(cfg)
 		if err != nil {

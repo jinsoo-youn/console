@@ -13,13 +13,13 @@ auth:
   keycloakAuthURL: https://hyperauth.org/auth/
 clusterInfo:
   k8sEndpoint: https://192.168.6.171:6443
-  hypercloudEndpoint: ""
-  multiHypercloudEndpoint: ""
-  webhookEndpoint: ""
-  alertmanagerEndpoint: ""
-  grafanaEndpoint: "" 
-  prometheusEndpoint: "http://172.23.4.201:30159/api"
-  thanosEndpoint: ""
+  hypercloudEndpoint: "https://192.168.6.171:32237"
+  multiHypercloudEndpoint: "https://192.168.6.171:32237"
+  webhookEndpoint: "https://192.168.6.171:32237"
+  prometheusEndpoint: "http://192.168.6.171:30714/api"
+  thanosEndpoint: "http://192.168.6.171:30714/api"
+  alertmanagerEndpoint: "http://192.168.6.171:30714/api"
+  grafanaEndpoint: "http://172.23.4.207:3000/api/grafana" 
 customization: 
   # branding: ""
   mcMode: false

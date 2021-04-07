@@ -31,6 +31,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/openshift/library-go/pkg/crypto"
 	"github.com/pkg/errors"
@@ -99,7 +100,7 @@ func init() {
 }
 
 // Create Router when changing proxy config
-func switchRouter(hyperCloudSrv http.Handler, proxySrv *pServer.HttpServer) func(config dynamic.Configuration) {
+func switchRouter(defaultHandler http.Handler, proxySrv *pServer.HttpServer) func(config dynamic.Configuration) {
 	return func(config dynamic.Configuration) {
 		log.Info("===Starting SwitchRouter====")
 		// config := config.DeepCopy()
@@ -128,42 +129,25 @@ func switchRouter(hyperCloudSrv http.Handler, proxySrv *pServer.HttpServer) func
 			}
 			dhproxy := proxy.NewProxy(dhconfig)
 			err = routerTemp.AddRoute(value.Rule, 0, http.StripPrefix(value.Path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				token := r.Header.Clone().Get("Authorization")
+				temp := strings.Split(token, "Bearer ")
+				if len(temp) > 1 {
+					token = temp[1]
+				} else {
+					token = temp[0]
+				}
+				// NOTE: query에 token 정보가 있을 시 해당 token으로 설정
+				queryToken := r.URL.Query().Get("token")
+				if queryToken != "" && token == "" {
+					r.URL.Query().Del("token")
+					token = queryToken
+				}
+				r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 				dhproxy.ServeHTTP(w, r)
 			})))
 			if err != nil {
 				log.Error("failed to put proxy handler into Router", err)
-				// return nil, err
 			}
-
-			// log.Infof("Creating proxy backend based on %v : %v  \n", name, value)
-			// proxyBackend, err := backend.NewBackend(name, value.Server)
-			// if err != nil {
-			// 	log.Error("Failed to parse url of server")
-			// 	// return nil, err
-			// }
-			// proxyBackend.Rule = value.Rule
-			// proxyBackend.ServerURL = value.Server
-
-			// if value.Path != "" {
-			// 	handlerConfig := &pConfig.StripPrefix{
-			// 		Prefixes: []string{value.Path},
-			// 	}
-			// 	prefixHandler, err := stripprefix.New(context.TODO(), proxyBackend.Handler, *handlerConfig, "stripPrefix")
-			// 	if err != nil {
-			// 		log.Error("Failed to create stripPrefix handler", err)
-			// 		// return nil, err
-			// 	}
-			// 	err = routerTemp.AddRoute(proxyBackend.Rule, 0, prefixHandler)
-			// 	if err != nil {
-			// 		log.Error("failed to put proxy handler into Router", err)
-			// 		// return nil, err
-			// 	}
-			// }
-			// err = routerTemp.AddRoute(proxyBackend.Rule, 0, proxyBackend.Handler)
-			// if err != nil {
-			// 	log.Error("failed to put proxy handler into Router ", err)
-			// 	// return nil, err
-			// }
 		}
 
 		err = routerTemp.AddRoute("PathPrefix(`/api/k8sAll`)", 0, http.HandlerFunc(
@@ -180,7 +164,7 @@ func switchRouter(hyperCloudSrv http.Handler, proxySrv *pServer.HttpServer) func
 			log.Error("/api/k8sAll/ has a problem", err)
 		}
 
-		err = routerTemp.AddRoute("PathPrefix(`/`)", 0, hyperCloudSrv)
+		err = routerTemp.AddRoute("PathPrefix(`/`)", 0, defaultHandler)
 		if err != nil {
 			log.Error("failed to put hypercloud proxy", err)
 			// return nil, err
