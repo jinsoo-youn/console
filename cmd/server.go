@@ -27,21 +27,16 @@ import (
 var proxyCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Run Web Server Only Serving Static Contents",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.WithField("FILE", "proxy.go").Println("proxy called")
 		defaultServer = viper.Get("SERVER").(*hypercloud.HttpServer)
 		log.WithField("FILE", "proxy.go").Println(defaultServer.Server.(*http.Server).Addr)
+		// defaultServer.Switcher.UpdateHandler(http.HandlerFunc(func))
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(proxyCmd)
 
 	// Here you will define your flags and configuration settings.
 

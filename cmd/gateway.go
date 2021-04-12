@@ -41,9 +41,12 @@ import (
 
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
-	Use:   "gateway",
+	Use: "gateway ( -f CONFIGFILE | [])",
+
 	Short: "Run as API gateway",
-	Long:  `hypercloud api gateway`,
+
+	Long: `hypercloud api gateway`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 
 		fmt.Printf("On SERVER: %v \n", *cfg)
@@ -59,7 +62,7 @@ var serverCmd = &cobra.Command{
 		var pvd = new(file.Provider)
 		pvd.Watch = true
 		dir, _ := os.Getwd()
-		pvd.Filename = dir + "/config/proxy.yaml"
+		pvd.Filename = dir + "/configs/proxy.yaml"
 		routinesPool := safe.NewPool(context.Background())
 		watcher := pServer.NewWatcher(pvd, routinesPool)
 		watcher.AddListener(switchRouter(staticHandler, defaultServer))
@@ -86,9 +89,8 @@ func init() {
 	// serverCmd.Flags().String("keycloak-realm", "", "Keycloak Realm Name")
 	// serverCmd.Flags().String("keycloak-auth-url", "", "URL of the Keycloak Auth server.")
 	// serverCmd.Flags().String("keycloak-client-id", "", "Keycloak Client Id")
-	serverCmd.PersistentFlags()
+	// serverCmd.PersistentFlags()
 	// viper.BindPFlags(serverCmd.Flags())
-	rootCmd.AddCommand(serverCmd)
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:

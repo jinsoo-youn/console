@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	log = logrus.New().WithField("MUDULE", "api/v1")
+	log = logrus.New().WithField("MODULE", "api/v1")
 )
 
 func ValidateConfig(config *Config) (err error) {

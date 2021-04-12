@@ -27,35 +27,43 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
-var cfg *v1.Config
-
 var (
 	defaultServer = &hypercloud.HttpServer{}
-	log           = logrus.New().WithField("MODULE", "CMD")
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "console",
-	Short: "The hypercloud console is like a API gateway for hypercloud",
-	Long:  `The hypercloud console is like a API gateway for hypercloud`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		log.WithField("FILE", "root.go").Println("CALL: root persistentPreRun")
-		log.WithField("FILE", "root.go").Printf("On ROOT: %v \n", *cfg)
-		err := v1.ValidateConfig(cfg)
-		if err != nil {
-			log.WithField("FILE", "root.go").Errorf("Validate Error: v1.ValidateConfig, line: 56 %v \n", err)
-		}
-		server, err := hypercloud.New(&cfg.ConsoleInfo)
-		if err != nil {
-			log.WithField("FILE", "root.go").Errorf("Error is occur while create default server %v \n", err)
-		}
-		log.WithField("FILE", "root.go").Printf("DEFAULT SERVER CONFIG: \n %v \n", server.DefaultConfig)
-		server.Start(context.TODO())
-		viper.Set("SERVER", server)
-	},
-}
+var (
+	cfgFile string
+	cfg     *v1.Config
+
+	log = logrus.New().WithField("MODULE", "CMD")
+
+	rootCmd = &cobra.Command{
+		Use:   "console",
+		Short: "",
+		Long:  ``,
+
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			log.WithField("FILE", "root.go").Println("CALL: root persistentPreRun")
+			log.WithField("FILE", "root.go").Printf("On ROOT: %v \n", *cfg)
+			err := v1.ValidateConfig(cfg)
+			if err != nil {
+				log.WithField("FILE", "root.go").Errorf("Validate Error: v1.ValidateConfig, line: 56 %v \n", err)
+			}
+			server, err := hypercloud.New(&cfg.ConsoleInfo)
+			if err != nil {
+				log.WithField("FILE", "root.go").Errorf("Error is occur while create default server %v \n", err)
+			}
+			log.WithField("FILE", "root.go").Printf("DEFAULT SERVER CONFIG: \n %v \n", server.DefaultConfig)
+			server.Start(context.TODO())
+			viper.Set("SERVER", server)
+		},
+
+		Run: func(cmd *cobra.Command, args []string) {
+			cmd.HelpFunc()(cmd, args)
+		},
+	}
+)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -63,22 +71,29 @@ func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }
 
+// config file 로 받아서 서버 기동? 혹은 개별 flag 값으로 기동--> 둘다 만족 했으면 좋겠음
+//
+
 func init() {
+	cfg = &v1.Config{}
 	cobra.OnInitialize(initConfig)
-	log.WithField("FILE", "root.go").Println("Call init func in root.go")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "./configs/console.yaml", "config file (default is $HOME/configs/console.yaml)")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "-c", "config file (default is $HOME/console.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
 
-	rootCmd.PersistentFlags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
-	rootCmd.PersistentFlags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
-	rootCmd.PersistentFlags().StringP("base-path", "p", "/", "defalut base path")
-	rootCmd.PersistentFlags().StringP("certFile", "", "./cert/ca.csr", "Cert file for TLS server")
-	rootCmd.PersistentFlags().StringP("keyFile", "", "./cert/ca.key", "Key file for TLS server")
+	// rootCmd.PersistentFlags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
+	// rootCmd.PersistentFlags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
+	// rootCmd.PersistentFlags().StringP("base-path", "p", "/", "defalut base path")
+	// rootCmd.PersistentFlags().StringP("certFile", "", "./cert/ca.csr", "Cert file for TLS server")
+	// rootCmd.PersistentFlags().StringP("keyFile", "", "./cert/ca.key", "Key file for TLS server")
 
 	err := viper.BindPFlags(rootCmd.Flags())
 	if err != nil {
 		log.WithField("FILE", "root.go").Errorf("error: viper.BindPFlags, line: 88 %v \n", err)
 	}
+
+	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(proxyCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -93,16 +108,15 @@ func initConfig() {
 
 		// Search config in home directory with name ".console" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".console")
+		viper.SetConfigName("console")
 	}
-
 	viper.AutomaticEnv() // read in environment variables that match
-	// viper.Set("test", "test is ok ^_^")
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		log.WithField("FILE", "root.go").Errorf("error: viper.ReadInConfig(), line: 111 %v \n", err)
-	}
 
-	viper.Unmarshal(&cfg)
-	log.WithField("FILE", "root.go").Printf("%v \n", cfg)
+	if err := viper.ReadInConfig(); err == nil {
+		log.WithField("FILE", "root.go").Println("Using config file:", viper.ConfigFileUsed())
+	}
+	if err := viper.Unmarshal(&cfg); err != nil {
+		log.WithField("FILE", "root.go").Errorf("Fail to unmarshal the config %v \n", err)
+	}
+	log.WithField("FILE", "root.go").Printf("config ==> \n %v \n", cfg)
 }

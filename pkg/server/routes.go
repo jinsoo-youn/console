@@ -300,8 +300,6 @@ func (s *Router) indexHandler(w http.ResponseWriter, r *http.Request) {
 		ConsoleVersion:   version.Version,
 		BasePath:         s.BaseURL.Path,
 		KubeAPIServerURL: s.K8sProxyConfig.Endpoint.String(),
-		// Branding:          s.Branding,
-		// CustomProductName: s.CustomProductName,
 
 		GOARCH: s.GOARCH,
 		GOOS:   s.GOOS,
