@@ -17,6 +17,8 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	v1 "console/pkg/api/v1"
 	"console/pkg/hypercloud"
@@ -49,6 +51,7 @@ var (
 			err := v1.ValidateConfig(cfg)
 			if err != nil {
 				log.WithField("FILE", "root.go").Errorf("Validate Error: v1.ValidateConfig, line: 56 %v \n", err)
+				os.Exit(1)
 			}
 			server, err := hypercloud.New(&cfg.ConsoleInfo)
 			if err != nil {
@@ -57,6 +60,8 @@ var (
 			log.WithField("FILE", "root.go").Printf("DEFAULT SERVER CONFIG: \n %v \n", server.DefaultConfig)
 			server.Start(context.TODO())
 			viper.Set("SERVER", server)
+			fmt.Println("viper value")
+			fmt.Println(viper.AllKeys())
 		},
 
 		Run: func(cmd *cobra.Command, args []string) {
@@ -71,27 +76,36 @@ func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }
 
-// config file 로 받아서 서버 기동? 혹은 개별 flag 값으로 기동--> 둘다 만족 했으면 좋겠음
-//
-
 func init() {
 	cfg = &v1.Config{}
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "./configs/console.yaml", "config file (default is $HOME/configs/console.yaml)")
-
+	// consoleInfo
 	rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
-
-	// rootCmd.PersistentFlags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
-	// rootCmd.PersistentFlags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
-	// rootCmd.PersistentFlags().StringP("base-path", "p", "/", "defalut base path")
-	// rootCmd.PersistentFlags().StringP("certFile", "", "./cert/ca.csr", "Cert file for TLS server")
-	// rootCmd.PersistentFlags().StringP("keyFile", "", "./cert/ca.key", "Key file for TLS server")
+	rootCmd.PersistentFlags().StringVar(&cfg.BaseAddress, "baseAddress", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.PersistentFlags().StringVar(&cfg.BasePath, "basePath", "/", "listen Address")
+	rootCmd.PersistentFlags().StringVar(&cfg.CertFile, "crt", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.PersistentFlags().StringVar(&cfg.KeyFile, "key", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.PersistentFlags().IntVar(&cfg.RedirectPort, "port", 0, "listen Address")
+	// // // auth
+	rootCmd.PersistentFlags().StringVar(&cfg.KeycloakClientId, "id", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.PersistentFlags().StringVar(&cfg.KeycloakRealm, "real", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.PersistentFlags().StringVar(&cfg.KeycloakAuthURL, "url", "http://0.0.0.0:3000", "listen Address")
+	rootCmd.PersistentFlags().StringVar(&cfg.KeycloakUseHiddenIframe, "hidden", "http://0.0.0.0:3000", "listen Address")
+	// // clusterInfo
+	// rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
+	// rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
+	// rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
+	// rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
+	// rootCmd.PersistentFlags().StringVar(&cfg.Listen, "listen", "http://0.0.0.0:3000", "listen Address")
+	// appInfo
 
 	err := viper.BindPFlags(rootCmd.Flags())
 	if err != nil {
 		log.WithField("FILE", "root.go").Errorf("error: viper.BindPFlags, line: 88 %v \n", err)
 	}
-
+	fmt.Println("viper value")
+	fmt.Println(viper.AllKeys())
 	rootCmd.AddCommand(serverCmd)
 	rootCmd.AddCommand(proxyCmd)
 }

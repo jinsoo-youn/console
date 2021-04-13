@@ -18,12 +18,12 @@ package v1
 
 // +k8s:deepcopy-gen=true
 type Config struct {
-	APIVersion    string `yaml:"apiVersion"`
-	Kind          string `yaml:"kind"`
-	ConsoleInfo   `yaml:"consoleInfo"`
-	ClusterInfo   `yaml:"clusterInfo"`
-	Auth          `yaml:"auth"`
-	Customization `yaml:"customization"`
+	APIVersion  string `yaml:"apiVersion"`
+	Kind        string `yaml:"kind"`
+	ConsoleInfo `yaml:"consoleInfo"`
+	ClusterInfo `yaml:"clusterInfo"`
+	AuthInfo    `yaml:"authInfo"`
+	AppInfo     `yaml:"appInfo"`
 }
 
 // +k8s:deepcopy-gen=true
@@ -38,7 +38,7 @@ type ConsoleInfo struct {
 
 // +k8s:deepcopy-gen=true
 // Auth holds configuration for authenticating with OpenShift. The auth method is assumed to be "openshift".
-type Auth struct {
+type AuthInfo struct {
 	KeycloakRealm           string `yaml:"keycloakRealm,omitempty"`
 	KeycloakAuthURL         string `yaml:"keycloakAuthURL,omitempty"`
 	KeycloakClientId        string `yaml:"keycloakClientId,omitempty"`
@@ -53,23 +53,19 @@ type ClusterInfo struct {
 	HypercloudEndpoint      string `yaml:"hypercloudEndpoint,omitempty"`
 	MultiHypercloudEndpoint string `yaml:"multiHypercloudEndpoint,omitempty"`
 	WebhookEndpoint         string `yaml:"WebhookEndpoint,omitempty"`
-	// Third party app
-	KialiEndpoint    string `yaml:"kialiEndpoint,omitempty"`
-	KibanaEndpoint   string `yaml:"kibanaEndpoint,omitempty"`
-	KubeflowEndpoint string `yaml:"kubeflowEndpoint,omitempty"`
 	// Monitoring app
 	GrafanaEndpoint      string `yaml:"grafanaEndpoint,omitempty"`
 	AlertmanagerEndpoint string `yaml:"alertmanagerEndpoint,omitempty"`
 	PrometheusEndpoint   string `yaml:"prometheusEndpoint,omitempty"`
-	GitlabURL            string `yaml:"gitlabURL,omitempty"`
+	// Third party app
+	KialiEndpoint    string `yaml:"kialiEndpoint,omitempty"`
+	KibanaEndpoint   string `yaml:"kibanaEndpoint,omitempty"`
+	KubeflowEndpoint string `yaml:"kubeflowEndpoint,omitempty"`
+	GitlabURL        string `yaml:"gitlabURL,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
-type Customization struct {
-	// Branding             string `yaml:"branding,omitempty"`
-	// DocumentationBaseURL string `yaml:"documentationBaseURL,omitempty"`
-	// CustomProductName    string `yaml:"customProductName,omitempty"`
-	// CustomLogoFile       string `yaml:"customLogoFile,omitempty"`
+type AppInfo struct {
 	McMode      bool   `yaml:"mcMode,omitempty"`
 	ReleaseMode bool   `yaml:"releaseMode,omitempty"`
 	PublicDir   string `yaml:"publicDir,omitempty"`

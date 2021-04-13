@@ -139,8 +139,8 @@ func validateConfig(config *v1.Config) (err error) {
 		return fmt.Errorf("unsupported version (apiVersion: %s, kind: %s), only console.hypercloud.io/v1 ConsoleConfig is supported", config.APIVersion, config.Kind)
 	}
 
-	if config.Auth.KeycloakAuthURL == "" || config.Auth.KeycloakClientId == "" || config.Auth.KeycloakRealm == "" {
-		return fmt.Errorf("Need to Auth Info (keycloakAuthURL: %s, KeycloakClientId: %s, KeycloakRealm: %s", config.Auth.KeycloakAuthURL, config.Auth.KeycloakClientId, config.Auth.KeycloakRealm)
+	if config.AuthInfo.KeycloakAuthURL == "" || config.AuthInfo.KeycloakClientId == "" || config.AuthInfo.KeycloakRealm == "" {
+		return fmt.Errorf("Need to Auth Info (keycloakAuthURL: %s, KeycloakClientId: %s, KeycloakRealm: %s", config.AuthInfo.KeycloakAuthURL, config.AuthInfo.KeycloakClientId, config.AuthInfo.KeycloakRealm)
 	}
 
 	return nil

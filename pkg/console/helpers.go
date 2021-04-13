@@ -54,23 +54,7 @@ const (
 	kubeflowEndpoint = "http://istio-ingressgateway.istio-system.svc/api/kubeflow/"
 )
 
-func validateConfig(config *v1.Config) (err error) {
-	if !(config.APIVersion == "console.hypercloud.io/v1beta1" || config.APIVersion == "console.hypercloud.io/v1") || config.Kind != "ConsoleConfig" {
-		return fmt.Errorf("unsupported version (apiVersion: %s, kind: %s), only console.hypercloud.io/v1 ConsoleConfig is supported", config.APIVersion, config.Kind)
-	}
-
-	if config.Auth.KeycloakAuthURL == "" || config.Auth.KeycloakClientId == "" || config.Auth.KeycloakRealm == "" {
-		return fmt.Errorf("Need to Auth Info (keycloakAuthURL: %s, KeycloakClientId: %s, KeycloakRealm: %s", config.Auth.KeycloakAuthURL, config.Auth.KeycloakClientId, config.Auth.KeycloakRealm)
-	}
-
-	return nil
-}
-
 func createConsole(config *v1.Config) (*Console, error) {
-	err := validateConfig(config)
-	if err != nil {
-		return nil, err
-	}
 	baseURL := &url.URL{}
 	if config.BaseAddress != "" {
 		baseURL = validateURL("base-address", config.BaseAddress)
@@ -172,7 +156,7 @@ func createConsole(config *v1.Config) (*Console, error) {
 		// CustomLogoFile:    config.CustomLogoFile,
 		McMode:          config.McMode,
 		ReleaseModeFlag: config.ReleaseMode,
-		// GitlabURL:       config.GitlabURL,
+		GitlabURL:       config.GitlabURL,
 
 		KeycloakRealm:    config.KeycloakRealm,
 		KeycloakAuthURL:  config.KeycloakAuthURL,
