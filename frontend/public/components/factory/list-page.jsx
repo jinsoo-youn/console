@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Button, TextInput } from '@patternfly/react-core';
+import { Tooltip, Button, TextInput } from '@patternfly/react-core';
 
 import { withFallback } from '@console/shared/src/components/error/error-boundary';
 import { useDocumentListener, KEYBOARD_SHORTCUTS } from '@console/shared';
@@ -16,6 +16,7 @@ import { Dropdown, Firehose, history, inject, kindObj, makeQuery, makeReduxID, P
 import { FilterToolbar } from '../filter-toolbar';
 import { ResourceLabel, ResourceLabelPlural } from '../../models/hypercloud/resource-plural';
 import { useTranslation } from 'react-i18next';
+import './list-page.scss';
 
 /** @type {React.SFC<{disabled?: boolean, label?: string, onChange: (value: string) => void;, defaultValue?: string, value?: string, placeholder?: string, autoFocus?: boolean, onFocus?:any, name?:string, id?: string, onKeyDown?: any, parentClassName?: string }}>} */
 export const TextFilter = props => {
@@ -69,7 +70,7 @@ ListPageWrapper_.propTypes = {
   hideLabelFilter: PropTypes.bool,
 };
 
-/** @type {React.FC<<WrappedComponent>, {canCreate?: Boolean, textFilter:string, createAccessReview?: Object, createButtonText?: String, createProps?: Object, fieldSelector?: String, filterLabel?: String, resources: any, badge?: React.ReactNode}>*/
+/** @type {React.FC<<WrappedComponent>, {canCreate?: Boolean, textFilter:string, createAccessReview?: Object, createButtonText?: String, createProps?: Object, fieldSelector?: String, filterLabel?: String, resources: any, badge?: React.ReactNode unclickableMsg?: String}>*/
 export const FireMan_ = connect(null, { filterList })(
   class ConnectedFireMan extends React.PureComponent {
     constructor(props) {
@@ -140,7 +141,7 @@ export const FireMan_ = connect(null, { filterList })(
     };
 
     render() {
-      const { canCreate, createAccessReview, createButtonText, createProps = {}, helpText, resources, badge, title } = this.props;
+      const { canCreate, createAccessReview, createButtonText, createProps = {}, helpText, resources, badge, title, unclickableMsg } = this.props;
 
       let createLink;
       if (canCreate) {
@@ -189,7 +190,13 @@ export const FireMan_ = connect(null, { filterList })(
                   'co-m-pane__createLink--no-title': !title,
                 })}
               >
-                {createLink}
+                {unclickableMsg ? (
+                  <Tooltip content={unclickableMsg}>
+                    <div className={classNames('list-page__button-nonclickable')}>{createLink}</div>
+                  </Tooltip>
+                ) : (
+                  <>{createLink}</>
+                )}
               </div>
             )}
             {!title && badge && <div>{badge}</div>}
@@ -255,7 +262,10 @@ export const ListPage = withFallback(props => {
   const title = props.title || labelPlural;
   const usedNamespace = !namespace && namespaced ? _.get(match, 'params.ns') : namespace;
 
+  const isNSSelected = !namespaced || namespace;
+
   let href = namespaced ? `/k8s/ns/${usedNamespace || 'default'}/${plural}/~new` : `/k8s/cluster/${plural}/~new`;
+
   if (ko.crd) {
     try {
       const ref = referenceForModel(ko);
@@ -266,6 +276,8 @@ export const ListPage = withFallback(props => {
   }
 
   createProps = createProps || (createHandler ? { onClick: createHandler } : { to: href });
+
+  const unclickableMsg = !isNSSelected ? t('COMMON:MSG_COMMON_ERROR_MESSAGE_48') : undefined;
   const createAccessReview = skipAccessReview ? null : { model: ko, namespace: usedNamespace };
   const resources = [
     {
@@ -313,15 +325,16 @@ export const ListPage = withFallback(props => {
       badge={badge}
       hideToolbar={hideToolbar}
       hideLabelFilter={hideLabelFilter}
+      unclickableMsg={unclickableMsg}
     />
   );
 }, ErrorBoundaryFallback);
 
 ListPage.displayName = 'ListPage';
 
-/** @type {React.SFC<{canCreate?: boolean, createButtonText?: string, createProps?: any, createAccessReview?: Object, flatten?: Function, title?: string, label?: string, hideTextFilter?: boolean, showTitle?: boolean, helpText?: any, filterLabel?: string, textFilter?: string, rowFilters?: any[], resources: any[], ListComponent: React.ComponentType<any>, namespace?: string, customData?: any, badge?: React.ReactNode, hideToolbar?: boolean, hideLabelFilter?: boolean setSidebarDetails?:any setShowSidebar?:any setSidebarTitle?: any>} */
+/** @type {React.SFC<{canCreate?: boolean, createButtonText?: string, createProps?: any, createAccessReview?: Object, flatten?: Function, title?: string, label?: string, hideTextFilter?: boolean, showTitle?: boolean, helpText?: any, filterLabel?: string, textFilter?: string, rowFilters?: any[], resources: any[], ListComponent: React.ComponentType<any>, namespace?: string, customData?: any, badge?: React.ReactNode, hideToolbar?: boolean, hideLabelFilter?: boolean setSidebarDetails?:any setShowSidebar?:any setSidebarTitle?: any> unclickableMsg?: string} */
 export const MultiListPage = props => {
-  const { autoFocus, canCreate, createAccessReview, createButtonText, createProps, filterLabel, flatten, helpText, label, ListComponent, setSidebarDetails, setShowSidebar, setSidebarTitle, mock, namespace, rowFilters, showTitle = true, staticFilters, textFilter, title, customData, badge, hideToolbar, hideLabelFilter } = props;
+  const { autoFocus, canCreate, createAccessReview, createButtonText, createProps, filterLabel, flatten, helpText, label, ListComponent, setSidebarDetails, setShowSidebar, setSidebarTitle, mock, namespace, rowFilters, showTitle = true, staticFilters, textFilter, title, customData, badge, hideToolbar, hideLabelFilter, unclickableMsg } = props;
 
   const resources = _.map(props.resources, r => ({
     ...r,
@@ -331,7 +344,7 @@ export const MultiListPage = props => {
   }));
 
   return (
-    <FireMan_ autoFocus={autoFocus} canCreate={canCreate} createAccessReview={createAccessReview} createButtonText={createButtonText || 'Create'} createProps={createProps} filterLabel={filterLabel || 'by name'} helpText={helpText} resources={mock ? [] : resources} selectorFilterLabel="Filter by selector (app=nginx) ..." textFilter={textFilter} title={showTitle ? title : undefined} badge={badge}>
+    <FireMan_ autoFocus={autoFocus} canCreate={canCreate} createAccessReview={createAccessReview} createButtonText={createButtonText || 'Create'} createProps={createProps} filterLabel={filterLabel || 'by name'} helpText={helpText} resources={mock ? [] : resources} selectorFilterLabel="Filter by selector (app=nginx) ..." textFilter={textFilter} title={showTitle ? title : undefined} badge={badge} unclickableMsg={unclickableMsg}>
       <Firehose resources={mock ? [] : resources}>
         <ListPageWrapper_ flatten={flatten} kinds={_.map(resources, 'kind')} label={label} ListComponent={ListComponent} setSidebarDetails={setSidebarDetails} setShowSidebar={setShowSidebar} setSidebarTitle={setSidebarTitle} textFilter={textFilter} rowFilters={rowFilters} staticFilters={staticFilters} customData={customData} hideToolbar={hideToolbar} hideLabelFilter={hideLabelFilter} />
       </Firehose>

@@ -39,6 +39,9 @@ declare interface Window {
     GOARCH: string;
     GOOS: string;
     McMode: boolean;
+    KeycloakAuthURL: string;
+    KeycloakRealm: string;
+    gitlabURL: string;
   };
   windowError?: boolean | string;
   __REDUX_DEVTOOLS_EXTENSION_COMPOSE__?: Function;

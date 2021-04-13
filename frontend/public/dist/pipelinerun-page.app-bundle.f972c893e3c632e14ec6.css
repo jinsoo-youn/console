@@ -1,0 +1,43 @@
+.odc-horizontal-stacked-bars {
+  --bar-gap: 3px;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  vertical-align: middle;
+  width: 100%;
+}
+
+.odc-horizontal-stacked-bars.is-inline {
+  display: inline-block;
+}
+
+.odc-horizontal-stacked-bars__bars {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  outline: none;
+  width: calc(100% + var(--bar-gap));
+}
+
+.odc-horizontal-stacked-bars__data-bar {
+  --bar-gap-neg: calc(var(--bar-gap) * -1);
+  box-shadow: inset var(--bar-gap-neg) 0 0 #fff;
+  height: 100%;
+  transition: flex-grow 300ms linear;
+}
+
+
+.odc-project-list-page {
+  background-color: var(--pf-global--BackgroundColor--light-100);
+  flex: 1;
+}
+
+.odc-project-list-page__section-border {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border-bottom: 0.8px solid #ccc;
+}
+
+
+
+/*# sourceMappingURL=pipelinerun-page.app-bundle.f972c893e3c632e14ec6.css.map*/

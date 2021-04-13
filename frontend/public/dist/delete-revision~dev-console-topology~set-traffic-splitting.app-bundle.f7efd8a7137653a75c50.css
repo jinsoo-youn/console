@@ -1,0 +1,441 @@
+.odc-task-status-tooltip {
+  display: inline-grid;
+  grid-gap: var(--pf-global--spacer--sm);
+  text-align: left;
+  grid-template-columns: 1rem auto;
+}
+
+.odc-task-status-tooltip__legend {
+  height: 1rem;
+  width: 1rem;
+}
+
+
+.odc-m-drag-active {
+  cursor: no-drop;
+}
+
+.odc-m-drag-active.odc-m-valid-drop-target {
+  cursor: grab;
+}
+
+.odc-m-drag-active.odc-m-valid-drop-target .odc-m-drag-create {
+  cursor: none;
+}
+
+.topology-connector__remove-bg {
+  fill: #73bcf7;
+  cursor: pointer;
+}
+
+.odc-m-drag-active .topology-connector__remove-bg {
+  display: none;
+}
+
+.topology-connector__remove-icon {
+  color: var(--pf-global--Color--light-100);
+  cursor: pointer;
+}
+
+.odc-m-drag-active .topology-connector__remove-icon {
+  display: none;
+}
+
+
+.odc-base-edge {
+  --edge--stroke-width: 2px;
+  --edge--stroke-dasharray: 0;
+  --edge--stroke: #bbb;
+  --edge--fill: var(--edge--stroke);
+  --edge--opacity: 1;
+  --edge--cursor: pointer;
+  --edge--active--stroke: #06c;
+  --edge--active--fill: var(--edge--active--stroke);
+  --edge--drag-active--opacity: .4;
+  --edge__arrow--cursor: default;
+  --edge--interactive--stroke: #73bcf7;
+  --edge--interactive--fill: var(--edge--interactive--stroke);
+  cursor: var(--edge--cursor);
+  stroke: var(--edge--stroke);
+  fill: var(--edge--fill);
+  opacity: var(--edge--opacity);
+}
+
+.odc-base-edge__link {
+  stroke-width: var(--edge--stroke-width);
+  stroke-dasharray: var(--edge--stroke-dasharray);
+}
+
+.odc-base-edge.is-selected {
+  fill: var(--edge--active--fill);
+  stroke: var(--edge--active--stroke);
+}
+
+.odc-base-edge.is-selected .odc-base-edge__link,
+.odc-base-edge.is-selected .topology-connector-arrow {
+  stroke: var(--edge--active--stroke);
+}
+
+.odc-base-edge.is-hover,
+.odc-base-edge.is-dragging {
+  fill: var(--edge--interactive--fill);
+  stroke: var(--edge--interactive--stroke);
+}
+
+.odc-base-edge.is-hover .odc-base-edge__link,
+.odc-base-edge.is-hover .topology-connector-arrow,
+.odc-base-edge.is-dragging .odc-base-edge__link,
+.odc-base-edge.is-dragging .topology-connector-arrow {
+  stroke: var(--edge--interactive--stroke);
+}
+
+.odc-base-edge .topology-connector-arrow {
+  cursor: var(--edge__arrow--cursor);
+  stroke: var(--edge--stroke);
+}
+
+.odc-m-drag-active .odc-base-edge {
+  pointer-events: none;
+  opacity: var(--edge--drag-active--opacity);
+}
+
+.odc-m-drag-active .odc-base-edge.is-dragging {
+  opacity: var(--edge--opacity);
+}
+
+.odc-m-drag-active .odc-base-edge .topology-connector-arrow {
+  pointer-events: none;
+}
+
+.odc-m-filter-active .odc-base-edge {
+  opacity: var(--edge--drag-active--opacity);
+}
+
+.odc-m-filter-active .odc-base-edge.is-dragging {
+  opacity: var(--edge--opacity);
+}
+
+
+.odc-base-edge.odc-aggregate-edge {
+  --edge--stroke: var(--pf-global--BackgroundColor--dark-200);
+  --edge--cursor: default;
+}
+
+
+.odc-base-edge.odc-connects-to {
+  --edge--stroke: var(--pf-global--Color--400);
+  --edge--fill: var(--pf-global--BackgroundColor--light-300);
+}
+
+.odc-base-edge.odc-connects-to.odc-m-editable {
+  --edge__arrow--cursor: pointer;
+}
+
+
+.odc-create-connector {
+  cursor: pointer;
+}
+
+.odc-create-connector.is-dragging {
+  pointer-events: none;
+}
+
+.odc-create-connector.topology-default-create-connector {
+  --create-connector-color: #73bcf7;
+}
+
+
+.odc-base-edge.odc-service-binding {
+  --edge--stroke: var(--pf-global--BackgroundColor--dark-200);
+}
+
+
+.odc-base-edge.odc-traffic-connector {
+  --edge--stroke: var(--pf-global--BackgroundColor--dark-200);
+  --edge--stroke-dasharray: 5;
+}
+
+
+:root {
+  --pf-chart-global--FontFamily: $font-family-base;
+  --pf-global--FontSize--md: $font-size-base;
+  --pf-global--FontSize--sm: 13px;
+}
+
+.odc-resource-icon {
+  font-size: 80%;
+  fill: #2b9af3;
+}
+
+.odc-resource-icon text {
+  fill: #fff !important;
+}
+
+.odc-resource-icon-service {
+  fill: #6ca100;
+}
+
+.odc-resource-icon-deployment,
+.odc-resource-icon-daemonset,
+.odc-resource-icon-deploymentconfig {
+  fill: #004080;
+}
+
+.odc-resource-icon-application {
+  fill: #467f40;
+}
+
+
+.odc-resource-kinds-info {
+  padding: var(--pf-global--spacer--md) var(--pf-global--spacer--md) var(--pf-global--spacer--md) 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.odc-resource-kinds-info__table {
+  width: 100%;
+}
+
+.odc-resource-kinds-info__table td {
+  padding-bottom: var(--pf-global--spacer--sm);
+  padding-right: var(--pf-global--spacer--sm);
+}
+
+.odc-resource-kinds-info__table td:last-of-type {
+  padding-right: 0;
+}
+
+.odc-resource-kinds-info__resource-icon {
+  width: 1%;
+}
+
+.odc-resource-kinds-info__resource-icon .co-m-resource-icon {
+  font-size: 80%;
+  margin-right: 0;
+}
+
+.odc-resource-kinds-info__count {
+  text-align: end;
+  width: 1%;
+}
+
+
+.odc-group-node__title {
+  font-size: var(--pf-global--FontSize--lg);
+  font-weight: var(--pf-global--FontWeight--bold);
+}
+
+.odc-group-node__type-icon {
+  fill: var(--pf-global--Color--light-100);
+  font-size: var(--pf-global--FontSize--md);
+}
+
+
+.odc-regroup-hint {
+  align-items: center;
+  display: flex;
+}
+
+.odc-regroup-hint__icon {
+  color: var(--pf-global--info-color--100);
+}
+
+.odc-regroup-hint__text {
+  margin-left: var(--pf-global--spacer--sm);
+}
+
+.odc-regroup-hint__text .ocs-shortcut__cell {
+  padding-bottom: 0;
+}
+
+
+.odc-application-group {
+  outline: none;
+  cursor: pointer;
+}
+
+.odc-m-drag-active .odc-application-group {
+  pointer-events: none;
+}
+
+.odc-application-group__bg {
+  fill: var(--pf-global--Color--light-100);
+  fill-opacity: 0.6;
+  stroke: var(--pf-global--Color--light-100);
+  stroke-width: 5px;
+}
+
+.odc-application-group.is-filtered .odc-application-group__bg {
+  stroke: #ef9234;
+}
+
+.odc-application-group.is-selected .odc-application-group__bg {
+  fill: #A5C4E2;
+  stroke: #06c;
+  fill-opacity: 0.5;
+}
+
+.odc-application-group.is-highlight .odc-application-group__bg {
+  fill: #f5f5f5;
+  stroke: #73bcf7;
+}
+
+.odc-application-group.is-dropTarget .odc-application-group__bg {
+  fill: #A5C4E2;
+  stroke: #73bcf7;
+}
+
+.odc-application-group__label {
+  fill: var(--pf-global--Color--300);
+}
+
+.odc-application-group__label text {
+  fill: var(--pf-global--Color--light-100);
+  pointer-events: none;
+  font-size: var(--pf-global--FontSize--sm);
+}
+
+.odc-m-drag-active .odc-application-group,
+.odc-m-filter-active .odc-application-group {
+  opacity: .4;
+}
+
+.odc-m-drag-active .odc-application-group.is-highlight,
+.odc-m-drag-active .odc-application-group.is-dragging,
+.odc-m-filter-active .odc-application-group.is-highlight,
+.odc-m-filter-active .odc-application-group.is-dragging {
+  opacity: 1;
+}
+
+.odc-m-filter-active:not(.odc-m-drag-active) .odc-application-group.is-filtered {
+  opacity: 1;
+}
+
+
+.odc-base-node {
+  outline: none;
+  cursor: pointer;
+}
+
+.odc-m-drag-active .odc-base-node {
+  pointer-events: none;
+}
+
+.odc-base-node:focus {
+  outline: none;
+}
+
+.odc-base-node__bg {
+  fill: var(--pf-global--BackgroundColor--light-100);
+}
+
+.odc-base-node.is-filtered .odc-base-node__bg {
+  stroke-width: 2px;
+  stroke: #ef9234;
+}
+
+.odc-base-node.is-selected .odc-base-node__bg {
+  stroke-width: 2px;
+  stroke: #06c;
+}
+
+.odc-base-node.is-highlight .odc-base-node__bg {
+  stroke-width: 0;
+}
+
+.odc-base-node.is-dropTarget .odc-base-node__bg {
+  stroke-width: 4px;
+  stroke: #73bcf7;
+}
+
+.odc-base-node__label {
+  fill: var(--pf-global--Color--light-100);
+  font-size: var(--pf-global--FontSize--md);
+}
+
+.odc-base-node__label text {
+  pointer-events: none;
+  fill: var(--pf-global--Color--300);
+}
+
+.odc-m-drag-active .odc-base-node,
+.odc-m-filter-active .odc-base-node {
+  opacity: .4;
+}
+
+.odc-m-drag-active .odc-base-node.is-dragging,
+.odc-m-drag-active .odc-base-node.is-highlight,
+.odc-m-filter-active .odc-base-node.is-dragging,
+.odc-m-filter-active .odc-base-node.is-highlight {
+  opacity: 1;
+}
+
+.odc-m-filter-active:not(.odc-m-drag-active) .odc-base-node.is-filtered {
+  opacity: 1;
+}
+
+
+.odc-decorator {
+  color: var(--pf-global--Color--200);
+  transition: color 0.2s ease;
+  outline: none;
+}
+
+.odc-decorator__link:hover {
+  text-decoration: none;
+}
+
+.odc-decorator__link:hover .odc-m-drag-active {
+  pointer-events: none;
+}
+
+.odc-decorator__bg {
+  fill: var(--pf-global--BackgroundColor--light-100);
+}
+
+.odc-decorator:hover,
+.odc-decorator:active {
+  color: var(--pf-global--link--Color--hover);
+}
+
+
+.odc-pipeline-build-decorator-tooltip {
+  min-width: 135px;
+}
+
+.odc-pipeline-build-decorator-tooltip__title,
+.odc-pipeline-build-decorator-tooltip__status-bars-title,
+.odc-pipeline-build-decorator-tooltip__status-breakdown {
+  text-align: left;
+}
+
+.odc-pipeline-build-decorator-tooltip__title {
+  padding-bottom: 1rem;
+}
+
+.odc-pipeline-build-decorator-tooltip__status-bars-wrapper {
+  padding-bottom: 0.5rem;
+}
+
+
+.odc-workload-node .pod-ring__center-text tspan {
+  font-size: 11px !important;
+}
+
+.odc-workload-node .pod-ring__center-text--reversed tspan {
+  font-size: 11px !important;
+}
+
+
+.odc-topology-context-menu {
+  z-index: 1050;
+}
+
+.odc-topology-context-menu__kebab-wrapper.pf-c-dropdown__menu-item {
+  padding: 0;
+}
+
+
+
+/*# sourceMappingURL=delete-revision~dev-console-topology~set-traffic-splitting.app-bundle.f7efd8a7137653a75c50.css.map*/

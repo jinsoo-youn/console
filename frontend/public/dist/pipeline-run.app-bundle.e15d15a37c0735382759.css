@@ -1,0 +1,20 @@
+.odc-dynamic-resource-link-list {
+  margin-bottom: var(--pf-global--spacer--lg);
+}
+
+
+.odc-task-status-tooltip {
+  display: inline-grid;
+  grid-gap: var(--pf-global--spacer--sm);
+  text-align: left;
+  grid-template-columns: 1rem auto;
+}
+
+.odc-task-status-tooltip__legend {
+  height: 1rem;
+  width: 1rem;
+}
+
+
+
+/*# sourceMappingURL=pipeline-run.app-bundle.e15d15a37c0735382759.css.map*/

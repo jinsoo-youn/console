@@ -1,0 +1,17 @@
+.imagemanifestvuln-details__donut {
+  padding: 30px;
+  width: 20%;
+}
+
+.imagemanifestvuln-details__summary {
+  width: 80%;
+}
+
+.imagemanifestvuln-details__summary-list {
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+/*# sourceMappingURL=container-security.app-bundle.3dccc56638320fcade24.css.map*/

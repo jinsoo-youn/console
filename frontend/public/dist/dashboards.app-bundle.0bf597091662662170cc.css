@@ -1,0 +1,82 @@
+.skeleton-chart {
+  height: inherit;
+  position: relative;
+  width: 100%;
+}
+
+.skeleton-chart::after {
+  background-image: url(./assets/skeleton-chart.svg);
+  background-position: 0px bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  content: "";
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.skeleton-text {
+  animation: loading-skeleton 1s ease-out 0.15s infinite alternate;
+  background: #eaedf1;
+  height: 24px;
+  opacity: 0;
+}
+
+.skeleton-text::after {
+  background-repeat: no-repeat;
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.co-status__operator-skeleton {
+  animation: loading-skeleton 1s ease-out 0.15s infinite alternate;
+  background: #eaedf1;
+  height: 20px;
+  opacity: 0;
+  margin-bottom: var(--pf-global--spacer--xs);
+}
+
+.co-status__operator-skeleton::after {
+  background-repeat: no-repeat;
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+
+.details-card__popup-subtitle {
+  font-size: 110%;
+  font-weight: bold;
+  padding-top: 10px;
+}
+
+.details-card__popup-style {
+  color: #808080;
+}
+
+.details-card__body-style {
+  max-height: 900px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.details-card__head-style {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+.details-card__body-icon {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+
+
+/*# sourceMappingURL=dashboards.app-bundle.0bf597091662662170cc.css.map*/

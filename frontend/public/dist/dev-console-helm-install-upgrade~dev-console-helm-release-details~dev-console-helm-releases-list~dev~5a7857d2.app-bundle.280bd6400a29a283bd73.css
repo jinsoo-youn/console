@@ -1,0 +1,37 @@
+.odc-namespaced-page {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.odc-namespaced-page__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: var(--pf-global--Color--light-200);
+  overflow-y: auto;
+  position: relative;
+}
+
+.odc-namespaced-page__content.is-light {
+  background-color: var(--pf-global--Color--light-100);
+}
+
+.odc-namespaced-page__toolbar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.odc-namespaced-page .co-namespace-selector {
+  max-width: 100%;
+}
+
+.odc-namespaced-page .co-namespace-bar__items {
+  flex-wrap: wrap;
+}
+
+
+
+/*# sourceMappingURL=dev-console-helm-install-upgrade~dev-console-helm-release-details~dev-console-helm-releases-list~dev~5a7857d2.app-bundle.280bd6400a29a283bd73.css.map*/

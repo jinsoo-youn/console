@@ -77,8 +77,23 @@ const ImageScanRequestTableRow: RowFunction<K8sResourceKind> = ({ obj: scanreque
 
 export const ImageScanRequestStatus: React.FC<ImageScanRequestStatusStatusProps> = ({ result }) => <Status status={result} />;
 
-export const ImageScanRequestDetailsList: React.FC<ImageScanRequestDetailsListProps> = ({ ds }) => {
+export const ImageScanRequestDetailsList: React.FC<ImageScanRequestDetailsListProps> = ({ ds, summary }) => {
   const { t } = useTranslation();
+  let imageResult = [];
+
+  ds.spec.scanTargets.forEach(target => {
+    target.images.forEach(image => {
+      imageResult.push(<span>{image}</span>);
+    });
+  });
+
+  const getImageResult = status => {
+    if (status === 'Pending' || !status) {
+      return '이미지 스캔대기 중입니다.';
+    } else if (status === 'Scanning') {
+      return '이미지를 스캔 중입니다.';
+    }
+  };
 
   return (
     <dl className="co-m-pane__details">
@@ -86,20 +101,24 @@ export const ImageScanRequestDetailsList: React.FC<ImageScanRequestDetailsListPr
       <dd>
         <ImageScanRequestStatus result={ds?.status?.status} />
       </dd>
-      {/* <dt>Summary</dt>
-      {summaries.map(summary => {
-        let summaryDisplay = summary.map(status => {
-          return <li key={status.key}> {`${status.key} ${status.value}`}</li>;
-        });
-        return (
-          <>
-            <dd>
-              {summaryKey.shift()}
-              <ul>{summaryDisplay}</ul>
-            </dd>
-          </>
-        );
-      })} */}
+      <dt>{t('COMMON:MSG_DETAILS_TABDETAILS_42')}</dt>
+      <dd style={{ display: 'flex', flexDirection: 'column' }}>{getImageResult(ds?.status?.status)}</dd>
+      <dt>{t('COMMON:MSG_DETAILS_TABDETAILS_5')}</dt>
+      <dd style={{ display: 'flex', flexDirection: 'column' }}>{ds?.spec?.scanTargets.map(cur => `${cur?.registryUrl}/${cur?.images[0]}`)}</dd>
+      {ds?.status?.status === 'Success' && <dt>{t('COMMON:MSG_DETAILS_TABDETAILS_21')}</dt>}
+      {ds?.status?.status === 'Success' && (
+        <dd style={{ display: 'flex', flexDirection: 'column' }}>
+          {_.keys(summary).map(cur => {
+            return <span>{`${cur}: ${summary[cur]}`}</span>;
+          })}
+        </dd>
+      )}
+      <dt>{t('COMMON:MSG_DETAILS_TABDETAILS_15')}</dt>
+      <dd>{ds?.spec?.insecure ? t('COMMON:MSG_DETAILS_TABDETAILS_46') : t('COMMON:MSG_DETAILS_TABDETAILS_45')}</dd>
+      {ds?.spec?.maxFixable && <dt>{t('COMMON:MSG_DETAILS_TABDETAILS_43')}</dt>}
+      <dd>{ds?.spec?.maxFixable}</dd>
+      <dt>{t('COMMON:MSG_DETAILS_TABDETAILS_44')}</dt>
+      <dd>{ds?.spec?.sendReport ? t('COMMON:MSG_DETAILS_TABDETAILS_47') : t('COMMON:MSG_DETAILS_TABDETAILS_48')}</dd>
       {/* <DetailsItem label="Summary" obj={ds} path="status.summary" /> */}
     </dl>
   );
@@ -130,20 +149,34 @@ export const ScanResultTable: React.FC<ScanResultTableProps> = ({ heading, scanL
       </div>
     </>
   );
-}
+};
 
 const ImageScanRequestDetails: React.FC<ImageScanRequestDetailsProps> = ({ obj: scanrequest }) => {
   const { t } = useTranslation();
-  const summaries = [];
+  const summary = {};
   for (const key in scanrequest.status?.results) {
-    let summary = { image: '', summary: '' };
-    summary.image = key;
-    for (const statusKey in scanrequest.status.results[key].summary) {
-      summary.summary += `${statusKey} ${scanrequest.status.results[key].summary[statusKey]}, `;
+    const result = scanrequest.status?.results[key];
+    // let summary = { image: '', summaries: [] };
+    for (const statusKey in result.summary) {
+      const isKeyExist = _.has(summary, statusKey);
+      if (isKeyExist) {
+        summary[statusKey] += scanrequest.status.results[key].summary[statusKey];
+      } else {
+        summary[statusKey] = scanrequest.status.results[key].summary[statusKey];
+      }
     }
-    summary.summary = summary.summary.substr(0, summary.summary.length - 2);
-    summaries.push(summary);
   }
+
+  // [outdate] previous version
+  // for (const key in scanrequest.status?.results) {
+  //   let summary = { image: '', summary: '' };
+  //   summary.image = key;
+  //   for (const statusKey in scanrequest.status.results[key].summary) {
+  //     summary.summary += `${statusKey} ${scanrequest.status.results[key].summary[statusKey]}, `;
+  //   }
+  //   summary.summary = summary.summary.substr(0, summary.summary.length - 2);
+  //   summaries.push(summary);
+  // }
 
   return (
     <>
@@ -154,13 +187,13 @@ const ImageScanRequestDetails: React.FC<ImageScanRequestDetailsProps> = ({ obj: 
             <ResourceSummary resource={scanrequest} />
           </div>
           <div className="col-lg-6">
-            <ImageScanRequestDetailsList ds={scanrequest} />
+            <ImageScanRequestDetailsList ds={scanrequest} summary={summary} />
           </div>
         </div>
       </div>
-      <div className="co-m-pane__body">
+      {/* <div className="co-m-pane__body">
         <ScanResultTable heading="Scan Result" scanList={summaries} />
-      </div>
+      </div> */}
     </>
   );
 };
@@ -170,32 +203,20 @@ const { details, editYaml } = navFactory;
 export const ImageScanRequests: React.FC = props => {
   const { t } = useTranslation();
 
-  return <Table
-    {...props}
-    aria-label="ImageScanRequests"
-    Header={ImageScanRequestTableHeader.bind(null, t)}
-    Row={ImageScanRequestTableRow}
-    virtualize
-  />;
-}
+  return <Table {...props} aria-label="ImageScanRequests" Header={ImageScanRequestTableHeader.bind(null, t)} Row={ImageScanRequestTableRow} virtualize />;
+};
 
 export const ImageScanRequestsPage: React.FC<ImageScanRequestsPageProps> = props => {
   const { t } = useTranslation();
 
-  return <ListPage
-    title={t('COMMON:MSG_LNB_MENU_95')}
-    createButtonText={t('COMMON:MSG_MAIN_CREATEBUTTON_1', { 0: t('COMMON:MSG_LNB_MENU_95') })}
-    canCreate={true}
-    ListComponent={ImageScanRequests}
-    kind={kind}
-    {...props}
-  />;
-}
+  return <ListPage title={t('COMMON:MSG_LNB_MENU_95')} createButtonText={t('COMMON:MSG_MAIN_CREATEBUTTON_1', { 0: t('COMMON:MSG_LNB_MENU_95') })} canCreate={true} ListComponent={ImageScanRequests} kind={kind} {...props} />;
+};
 
 export const ImageScanRequestsDetailsPage: React.FC<ImageScanRequestsDetailsPageProps> = props => <DetailsPage {...props} kind={kind} menuActions={menuActions} pages={[details(detailsPage(ImageScanRequestDetails)), editYaml()]} />;
 
 type ImageScanRequestDetailsListProps = {
   ds: K8sResourceKind;
+  summary: any;
 };
 
 type ScanResultTableProps = {

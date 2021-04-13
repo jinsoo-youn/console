@@ -1,23 +1,28 @@
 import * as _ from 'lodash-es';
 import { coFetchJSON } from '../../co-fetch';
-import { k8sBasePath } from './k8s';
+import { k8sBasePath, multiClusterBasePath } from './k8s';
 import { selectorToString } from './selector';
 import { WSFactory } from '../ws-factory';
 import { getActivePerspective, getActiveCluster } from '../../actions/ui';
 import { getId, getUserGroup } from '../../hypercloud/auth';
+import { kindToSchemaPath } from '../hypercloud/k8s/kind-to-schema-path.ts'
+
+export const getDynamicProxyPath = (cluster) => {
+  if (window.SERVER_FLAGS.McMode && getActivePerspective() == 'hc') {
+    return `${window.SERVER_FLAGS.basePath}api/${getActiveCluster()}`;
+  } else if (cluster) {
+    return `${window.SERVER_FLAGS.basePath}api/${cluster}`;
+  } else {
+    return k8sBasePath;
+  }
+};
 
 /** @type {(model: K8sKind) => string} */
-const getK8sAPIPath = ({ apiGroup = 'core', apiVersion}, cluster)
+export const getK8sAPIPath = ({ apiGroup = 'core', apiVersion}, cluster)
 => {
   const isLegacy = apiGroup === 'core' && apiVersion === 'v1';
 
-  let p = k8sBasePath;
-
-  if (window.SERVER_FLAGS.McMode && getActivePerspective() == 'hc') {
-    p = `${window.SERVER_FLAGS.basePath}api/${getActiveCluster()}`;
-  } else if (cluster) {
-    p = `${window.SERVER_FLAGS.basePath}api/${cluster}`;
-  }
+  let p = getDynamicProxyPath(cluster);
 
   if (isLegacy) {
     p += '/api/';
@@ -30,6 +35,20 @@ const getK8sAPIPath = ({ apiGroup = 'core', apiVersion}, cluster)
   }
 
   p += apiVersion;
+  return p;
+};
+
+/** @type {(model: K8sKind) => string} */
+const getClusterAPIPath = ({ apiGroup = 'core', apiVersion}, cluster)
+=> {
+  const isLegacy = apiGroup === 'core' && apiVersion === 'v1';
+  let p = multiClusterBasePath;
+
+  if (window.SERVER_FLAGS.McMode && getActivePerspective() == 'hc') {
+    p = `${window.SERVER_FLAGS.basePath}api/${getActiveCluster()}`;
+  } else if (cluster) {
+    p = `${window.SERVER_FLAGS.basePath}api/${cluster}`;
+  }
   return p;
 };
 
@@ -60,11 +79,33 @@ export const resourceURL = (model, options) => {
   return u;
 };
 
-export const resourceClusterURL = (model) => {
-  if(isCluster(model)) {
-    return `/api/multi-hypercloud/cluster?userId=${getId()}${getUserGroup()}&accessOnly=false`;
+export const resourceClusterURL = (model, options) => {
+  let q = '';
+  let u = getClusterAPIPath(model, options.cluster);
+
+  if (options.ns) {
+    u += `/namespaces/${options.ns}`;
   }
-  return `api/multi-hypercloud/clusterclaim?userId=${getId()}${getUserGroup()}`;
+  u += `/${model.plural}`;
+  if (options.name) {
+    // Some resources like Users can have special characters in the name.
+    u += `/${encodeURIComponent(options.name)}`;
+  }
+  if (options.path) {
+    u += `/${options.path}`;
+  }
+  if (!_.isEmpty(options.queryParams)) {
+    q = _.map(options.queryParams, function(v, k) {
+      return `${k}=${v}`;
+    });
+    u += `?${q.join('&')}`;
+
+  }
+
+  if(isCluster(model)) {
+    return `${u}?userId=${getId()}${getUserGroup()}&accessOnly=false`;
+  }
+  return `${u}?userId=${getId()}${getUserGroup()}`;
 }
 
 export const resourceApprovalURL = (model, options, approval) => {
@@ -139,8 +180,11 @@ export const k8sUpdateApproval = (kind, resource, approval, data, method = 'PUT'
   }
 }
 
-export const k8sUpdateClaim = (kind, clusterClaim, admit, reason) => {
-  const url = resourceClusterURL(kind) + `&clusterClaim=${clusterClaim}&admit=${admit}&reason=${reason}`;
+export const k8sUpdateClaim = (kind, clusterClaim, admit, reason, userName, nameSpace) => {
+
+  const resourceClusterURL = `api/multi-hypercloud/namespaces/${nameSpace}/clusterclaims/${clusterClaim}?userId=${getId()}${getUserGroup()}`;
+
+  const url = resourceClusterURL + `&admit=${admit}&reason=${reason}&userName=${userName}&memberName=cho`;
 
   return coFetchJSON.put(url);
 }
@@ -167,6 +211,13 @@ export const k8sPatch = (kind, resource, data, opts = {}) => {
   );
 };
 
+export const k8sCreateSchema = (kind) => {
+  const directory = kindToSchemaPath.get(kind)?.['directory'];
+  const file = kindToSchemaPath.get(kind)?.['file'];
+  const schemaUrl = `/api/resource/${directory}/${file}`;
+  return coFetchJSON(`${schemaUrl}`, 'GET');
+}
+
 export const k8sPatchByName = (kind, name, namespace, data, opts = {}) => k8sPatch(kind, { metadata: { name, namespace } }, data, opts);
 
 export const k8sKill = (kind, resource, opts = {}, json = null) => coFetchJSON.delete(resourceURL(kind, Object.assign({ ns: resource.metadata.namespace, name: resource.metadata.name }, opts)), opts, json);
@@ -181,12 +232,14 @@ export const k8sList = (kind, params = {}, raw = false, options = {}) => {
     return `${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
   }).join('&');
 
-  if(isCluster(kind) || isClusterClaim(kind)) {
-    const listClusterURL = resourceClusterURL(kind);
-    return coFetchJSON(`${listClusterURL}`, 'GET').then((result) => raw ? result: result.items);
-  }
+  // if(isCluster(kind) || isClusterClaim(kind)) {
+  //   const listClusterURL = resourceClusterURL(kind);
+  //   return coFetchJSON(`${listClusterURL}`, 'GET').then((result) => raw ? result: result.items);
+  // }
 
-  let listURL = resourceURL(kind, { ns: params.ns });
+  let isMultiCluster = isCluster(kind) || isClusterClaim(kind);
+  let listURL = isMultiCluster ? resourceClusterURL(kind, {ns: params.ns}) : resourceURL(kind, { ns: params.ns });
+  // let listURL = resourceURL(kind, { ns: params.ns });
   if(localStorage.getItem('bridge/last-perspective') === 'hc') {
     return coFetchJSON(`${listURL}?${query}`, 'GET', options).then(result => (raw ? result : result.items));
   }
@@ -197,8 +250,11 @@ export const k8sList = (kind, params = {}, raw = false, options = {}) => {
   } else if (kind.kind === 'NamespaceClaim') {
     listURL = `${document.location.origin}/api/hypercloud/namespaceClaim?userId=${getId()}${getUserGroup()}`;
     return coFetchJSON(`${listURL}`, 'GET', options).then(result => (raw ? result : result.items));
-  } else {
-  return coFetchJSON(`${listURL}?${query}`, 'GET', options).then(result => (raw ? result : result.items));
+  } else if (isMultiCluster){
+    return coFetchJSON(`${listURL}`, 'GET', options).then(result => (raw ? result : result.items));  
+  }
+  else {
+    return coFetchJSON(`${listURL}?${query}`, 'GET', options).then(result => (raw ? result : result.items));
   }
 };
 

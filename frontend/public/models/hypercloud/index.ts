@@ -21,7 +21,7 @@ export const ClusterManagerModel: K8sKind = {
   abbr: 'CM',
   kind: 'ClusterManager',
   id: 'clustermanager',
-  namespaced: false,
+  namespaced: true,
 };
 
 export const ClusterClaimModel: K8sKind = {
@@ -33,7 +33,7 @@ export const ClusterClaimModel: K8sKind = {
   abbr: 'CC',
   kind: 'ClusterClaim',
   id: 'clusterclaim',
-  namespaced: false,
+  namespaced: true,
 };
 
 export const SignerPolicyModel: K8sKind = {
@@ -47,6 +47,19 @@ export const SignerPolicyModel: K8sKind = {
   crd: false,
   id: 'signerpolicy',
   plural: 'signerpolicies',
+};
+
+export const ImageReplicateModel: K8sKind = {
+  kind: 'ImageReplicate',
+  label: 'Image Replicate',
+  labelPlural: 'Image Replicates',
+  apiGroup: 'tmax.io',
+  apiVersion: 'v1',
+  abbr: 'IR',
+  namespaced: true,
+  crd: false,
+  id: 'imagereplicate',
+  plural: 'imagereplicates',
 };
 
 export const PodSecurityPolicyModel: K8sKind = {
@@ -761,28 +774,105 @@ export const ClusterTemplateModel: K8sKind = {
   namespaced: false,
 };
 
-export const EventListenerModel: K8sKind = {
-  apiGroup: 'triggers.tekton.dev',
-  apiVersion: 'v1alpha1',
-  label: 'Event Listener',
-  plural: 'eventlisteners',
-  abbr: 'EL',
+export const NotebookModel: K8sKind = {
+  label: 'Notebook',
+  labelPlural: 'Notebook Server',
+  apiVersion: 'v1',
+  apiGroup: 'kubeflow.tmax.io',
+  plural: 'notebooks',
+  abbr: 'NB',
   namespaced: true,
-  kind: 'EventListener',
-  id: 'eventlistener',
-  labelPlural: 'Event Listeners',
+  kind: 'Notebook',
+  id: 'notebook',
   crd: false,
 };
 
-export const TriggerTemplateModel: K8sKind = {
-  apiGroup: 'triggers.tekton.dev',
-  apiVersion: 'v1alpha1',
-  label: 'Trigger Template',
-  plural: 'triggertemplates',
-  abbr: 'TT',
+export const ExperimentModel: K8sKind = {
+  label: 'Experiment',
+  labelPlural: 'Experiments',
+  apiVersion: 'v1beta1',
+  apiGroup: 'kubeflow.org',
+  plural: 'experiments',
+  abbr: 'EX',
   namespaced: true,
-  kind: 'TriggerTemplate',
-  id: 'triggertemplate',
-  labelPlural: 'Trigger Templates',
+  kind: 'Experiment',
+  id: 'experiment',
+  crd: false,
+};
+
+export const TrainingJobModel: K8sKind = {
+  label: 'Training Job',
+  labelPlural: 'Training Jobs',
+  apiVersion: 'v1',
+  apiGroup: 'kubeflow.org',
+  plural: 'trainingjobs',
+  abbr: 'TJ',
+  namespaced: true,
+  kind: 'TrainingJob',
+  id: 'trainingjob',
+  crd: false,
+};
+
+export const TFJobModel: K8sKind = {
+  label: 'TFJob',
+  labelPlural: 'TF Jobs',
+  apiVersion: 'v1',
+  apiGroup: 'kubeflow.org',
+  plural: 'tfjobs',
+  abbr: 'TFJ',
+  namespaced: true,
+  kind: 'TFJob',
+  id: 'tfjob',
+  crd: false,
+};
+export const PyTorchJobModel: K8sKind = {
+  label: 'PyTorchJob',
+  labelPlural: 'PyTorch Jobs',
+  apiVersion: 'v1',
+  apiGroup: 'kubeflow.org',
+  plural: 'pytorchjobs',
+  abbr: 'PTJ',
+  namespaced: true,
+  kind: 'PyTorchJob',
+  id: 'pytorchjob',
+  crd: false,
+};
+
+export const InferenceServiceModel: K8sKind = {
+  label: 'Inference Service',
+  labelPlural: 'Inference Services',
+  apiVersion: 'v1alpha2',
+  apiGroup: 'serving.kubeflow.org',
+  plural: 'inferenceservices',
+  abbr: 'ISVC',
+  namespaced: true,
+  kind: 'InferenceService',
+  id: 'inferenceservice',
+  crd: false,
+};
+
+export const WorkflowTemplateModel: K8sKind = {
+  label: 'WorkflowTemplate',
+  labelPlural: 'Workflow Templates',
+  apiVersion: 'v1alpha1',
+  apiGroup: 'argoproj.io',
+  plural: 'workflowtemplates',
+  abbr: 'WFT',
+  namespaced: true,
+  kind: 'WorkflowTemplate',
+  id: 'workflowtemplate',
+  crd: false,
+};
+
+export const WorkflowModel: K8sKind = {
+  label: 'Workflow',
+  labelPlural: 'Workflows',
+  apiVersion: 'v1alpha1',
+  apiGroup: 'argoproj.io',
+  plural: 'workflows',
+  abbr: 'WF',
+  namespaced: true,
+  kind: 'Workflow',
+  id: 'workflow',
   crd: false,
 };

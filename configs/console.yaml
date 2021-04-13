@@ -1,8 +1,8 @@
 apiVersion: console.hypercloud.io/v1beta1
 kind: ConsoleConfig
 consoleInfo:
-  listen: https://172.29.81.255:9000
-  baseAddress: "https://172.29.81.255:9000"
+  listen: https://172.26.171.249:9000
+  baseAddress: "https://172.26.171.249:9000"
   basePath: "/"
   certFile: "tls/tls.crt"
   keyFile: "tls/tls.key"
@@ -17,14 +17,10 @@ clusterInfo:
   multiHypercloudEndpoint: "https://192.168.6.171:32237"
   webhookEndpoint: "https://192.168.6.171:32237"
   prometheusEndpoint: "http://192.168.6.171:30714/api"
-  thanosEndpoint: "http://192.168.6.171:30714/api"
   alertmanagerEndpoint: "http://192.168.6.171:30714/api"
   grafanaEndpoint: "http://172.23.4.207:3000/api/grafana" 
 customization: 
-  # branding: ""
   mcMode: false
   releaseMode: true
-  # customProductName: ""
-  # customLogoFile: ""
   publicDir: "./frontend/public/dist"
   

@@ -31,7 +31,6 @@ const DropDownRow = React.memo((props) => {
 });
 
 const Dropdown_ = (props) => {
-  const { register, unregister, setValue, watch } = useFormContext();
 
   const {
     name,
@@ -43,10 +42,15 @@ const Dropdown_ = (props) => {
     titlePrefix,
     describedBy,
     disabled,
-    required
+    required,
+    methods,
+    defaultValue
   } = props;
+  const { register, unregister, setValue, watch } = methods ? methods : useFormContext();
 
-  const selectedKey = watch(name);
+  const selectedKey = watch(name, defaultValue);
+  /* defaultValue를 쓰는 경우(ex.모달)에 getVaule를 해보면 form이 비어있는 경우가 있음. 초기값 세팅을 해줌. */
+  defaultValue && setValue(name, selectedKey);
 
   const [title, setTitle] = React.useState(_.get(props.items, selectedKey, props.title));
   const [active, setActive] = React.useState(!!props.active);
@@ -79,6 +83,7 @@ const Dropdown_ = (props) => {
     e.stopPropagation();
 
     setValue(name, selected);
+    setKeyboardHoverKey(selected);
 
     const newTitle = items[selected];
     setTitle(newTitle);
@@ -151,6 +156,7 @@ const Dropdown_ = (props) => {
     const newKey = keys[index];
     setKeyboardHoverKey(newKey);
     e.stopPropagation();
+    e.preventDefault(); // 키보드 사용시 화면 스크롤되지 않도록 처리
   }
 
   React.useEffect(() => {
@@ -161,6 +167,14 @@ const Dropdown_ = (props) => {
       window.removeEventListener('click', onWindowClick);
     }
   }, [name, register, unregister]);
+
+  React.useEffect(() => {
+    !selectedKey && props.title && setTitle(props.title);
+  }, [props.title]);
+
+  React.useEffect(() => {
+    setItems(props.items);
+  }, [props.items]);
 
   const spacerBefore = props.spacerBefore || new Set();
   const headerBefore = props.headerBefore || {};
@@ -201,10 +215,10 @@ const Dropdown_ = (props) => {
   _.each(items, (v, k) => addItem(k, v));
 
   return (
-    <div className={className} ref={dropdownElement} style={props.style}>
+    <div className={className} ref={dropdownElement} style={...props.style}>
       <div
         className={classNames(
-          { 'dropdown pf-c-dropdown': true, 'pf-m-expanded': active },
+          { 'dropdown pf-c-dropdown': true, 'pf-m-expanded': active, 'col-md-12': true },
           dropDownClassName,
         )}
       >
@@ -258,7 +272,9 @@ Dropdown.propTypes = {
   spacerBefore: PropTypes.instanceOf(Set),
   textFilter: PropTypes.string,
   title: PropTypes.node,
+  defaultValue?: PropTypes.string,
   disabled: PropTypes.bool,
+  methods?: PropTypes.any
 };
 
 const containerLabel = (container) => (

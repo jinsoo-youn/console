@@ -17,13 +17,13 @@ package cmd
 
 import (
 	"console/pkg/config/dynamic"
+	"console/pkg/console"
 	"console/pkg/hypercloud"
 	pServer "console/pkg/hypercloud"
 	"console/pkg/hypercloud/provider/file"
 	"console/pkg/hypercloud/proxy"
 	"console/pkg/hypercloud/router"
 	"console/pkg/hypercloud/safe"
-	"console/pkg/server"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -48,16 +48,17 @@ var serverCmd = &cobra.Command{
 	Long: `hypercloud api gateway`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
-		fmt.Printf("On SERVER: %v \n", *cfg)
-		fmt.Println("changing handler")
+		log.Infof("On SERVER: %v \n", *cfg)
+		log.Infoln("Use Gateway handler")
 		// Create Static handler
-		staticServer, _ := server.New(cfg)
-		staticHandler := staticServer.Start()
+		staticServer, err := console.New(cfg)
+		if err != nil {
+			log.Errorf("error occure when create console.New(cfg) %v \n", err)
+		}
+		staticHandler := staticServer.Gateway()
 
 		// Get Default Server
 		defaultServer = viper.Get("SERVER").(*hypercloud.HttpServer)
-		// defaultServer.Switcher.UpdateHandler(staticHandler)
 
 		var pvd = new(file.Provider)
 		pvd.Watch = true
@@ -67,46 +68,16 @@ var serverCmd = &cobra.Command{
 		watcher := pServer.NewWatcher(pvd, routinesPool)
 		watcher.AddListener(switchRouter(staticHandler, defaultServer))
 		watcher.Start()
-
-		// fmt.Println("sleep 10 sec")
-		// time.Sleep(time.Second * 10)
-		// fmt.Println("changing router based on MAP")
-		// // r.HandleFunc("/test/", func(w http.ResponseWriter,
-		// // 	r *http.Request) {
-		// // 	w.Write([]byte("test"))
-		// // })
-		// defaultServer.Switcher.UpdateHandler(r)
 	},
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// serverCmd.Flags().StringP("listen", "l", "http://0.0.0.0:3000", "listen Address")
-	// serverCmd.Flags().StringP("base-address", "b", "", "Format: <http | https>://domainOrIPAddress[:port]. Example: https://hypercloud.example.com.")
-	// serverCmd.Flags().StringP("base-path", "p", "/", "defalut base path")
-	// serverCmd.Flags().StringP("public-dir", "d", "./frontend/public/dist", "directory containing static web assets.")
-
-	// serverCmd.Flags().String("keycloak-realm", "", "Keycloak Realm Name")
-	// serverCmd.Flags().String("keycloak-auth-url", "", "URL of the Keycloak Auth server.")
-	// serverCmd.Flags().String("keycloak-client-id", "", "Keycloak Client Id")
-	// serverCmd.PersistentFlags()
-	// viper.BindPFlags(serverCmd.Flags())
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 // Create Router when changing proxy config
 func switchRouter(defaultHandler http.Handler, proxySrv *pServer.HttpServer) func(config dynamic.Configuration) {
 	return func(config dynamic.Configuration) {
 		log.Info("===Starting SwitchRouter====")
-		// config := config.DeepCopy()
-
 		routerTemp, err := router.NewRouter()
 		if err != nil {
 			log.Info("Failed to create router ", err)
@@ -114,13 +85,11 @@ func switchRouter(defaultHandler http.Handler, proxySrv *pServer.HttpServer) fun
 		}
 		log.Infof("buildHandler : %v  \n", config.Routers)
 		for name, value := range config.Routers {
-
 			log.Infof("Create Hypercloud proxy based on %v: %v \n", name, value)
 			backURL, err := url.Parse(value.Server)
 			if err != nil {
 				log.Error(errors.Wrapf(err, "URL Parsing failed for: %s", value.Server))
 			}
-
 			dhconfig := &proxy.Config{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
@@ -151,8 +120,7 @@ func switchRouter(defaultHandler http.Handler, proxySrv *pServer.HttpServer) fun
 				log.Error("failed to put proxy handler into Router", err)
 			}
 		}
-
-		err = routerTemp.AddRoute("PathPrefix(`/api/k8sAll`)", 0, http.HandlerFunc(
+		err = routerTemp.AddRoute("PathPrefix(`/api/console/dynamic`)", 0, http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				rw.Header().Set("Content-Type", "application/json")
 				err := json.NewEncoder(rw).Encode(config)

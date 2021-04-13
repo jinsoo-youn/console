@@ -210,9 +210,9 @@ func createRouter(config *v1.Config) (*Router, error) {
 	if config.PrometheusEndpoint == "" {
 		config.PrometheusEndpoint = hypercloudPrometheusEndpoint
 	}
-	if config.ThanosEndpoint == "" {
-		config.ThanosEndpoint = hypercloudThanosEndpoint
-	}
+	// if config.ThanosEndpoint == "" {
+	// 	config.ThanosEndpoint = hypercloudThanosEndpoint
+	// }
 	if config.AlertmanagerEndpoint == "" {
 		config.AlertmanagerEndpoint = hypercloudAlertManagerEndpoint
 	}
@@ -256,9 +256,9 @@ func createRouter(config *v1.Config) (*Router, error) {
 		KeycloakAuthURL:  config.KeycloakAuthURL,
 		KeycloakClientId: config.KeycloakClientId,
 
-		K8sProxyConfig:                   k8sProxyConfig,
-		PrometheusProxyConfig:            newProxy(config.PrometheusEndpoint),
-		ThanosProxyConfig:                newProxy(config.ThanosEndpoint),
+		K8sProxyConfig:        k8sProxyConfig,
+		PrometheusProxyConfig: newProxy(config.PrometheusEndpoint),
+		// ThanosProxyConfig:                newProxy(config.ThanosEndpoint),
 		ThanosTenancyProxyConfig:         newProxy(config.PrometheusEndpoint),
 		AlertManagerProxyConfig:          newProxy(config.AlertmanagerEndpoint),
 		GrafanaProxyConfig:               newProxy(config.GrafanaEndpoint),

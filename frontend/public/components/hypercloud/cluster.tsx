@@ -12,6 +12,7 @@ import { ClusterManagerModel } from '../../models';
 import { configureClusterNodesModal } from './modals';
 import { MembersPage } from './members';
 import { ResourceLabel } from '../../models/hypercloud/resource-plural';
+import { ResourceEventStream } from '../events';
 
 const ModifyClusterNodes: KebabAction = (kind: K8sKind, obj: any) => ({
   label: 'Edit Nodes',
@@ -32,7 +33,7 @@ export const menuActions: KebabAction[] = [ModifyClusterNodes, ...Kebab.getExten
 
 const kind = ClusterManagerModel.kind;
 
-const tableColumnClasses = ['', '', classNames('pf-m-hidden', 'pf-m-visible-on-sm', 'pf-u-w-16-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), Kebab.columnClass];
+const tableColumnClasses = ['', '', classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), classNames('pf-m-hidden', 'pf-m-visible-on-lg'), Kebab.columnClass];
 
 const ClusterTableHeader = (t?: TFunction) => {
   return [
@@ -99,15 +100,15 @@ const ClusterTableHeader = (t?: TFunction) => {
 ClusterTableHeader.displayName = 'ClusterTableHeader';
 
 const ClusterTableRow: RowFunction<IClusterTableRow> = ({ obj: cluster, index, key, style }) => {
-  const owner = Object.keys(cluster.status?.owner)[0];
+  const owner = cluster.metadata?.annotations?.owner;
   return (
     <TableRow id={cluster.metadata.uid} index={index} trKey={key} style={style}>
       <TableData className={tableColumnClasses[0]}>
-        <ResourceLink kind={kind} name={cluster.metadata.name} displayName={cluster.fakeMetadata.fakename} title={cluster.metadata.uid} />
+        <ResourceLink kind={kind} name={cluster.metadata.name} displayName={cluster.fakeMetadata.fakename} title={cluster.metadata.uid} namespace={cluster.metadata.namespace} />
       </TableData>
       <TableData className={classNames(tableColumnClasses[1])}>{cluster.spec.provider}</TableData>
-      <TableData className={classNames(tableColumnClasses[2])}>{cluster.spec.provider ? "생성" : "등록"}</TableData>
-      <TableData className={tableColumnClasses[3]}>{cluster.status?.ready ? "준비" : "생성 중"}</TableData>
+      <TableData className={classNames(tableColumnClasses[2])}>{cluster.spec.provider ? '생성' : '등록'}</TableData>
+      <TableData className={tableColumnClasses[3]}>{cluster.status?.ready ? '준비' : '생성 중'}</TableData>
       <TableData className={tableColumnClasses[4]}>{cluster.spec.version}</TableData>
       <TableData className={tableColumnClasses[5]}>{`${cluster.status?.masterRun ?? 0} / ${cluster.spec?.masterNum ?? 0}`}</TableData>
       <TableData className={tableColumnClasses[6]}>{`${cluster.status?.workerRun ?? 0} / ${cluster.spec?.workerNum ?? 0}`}</TableData>
@@ -126,14 +127,13 @@ export const ClusterDetailsList: React.FC<ClusterDetailsListProps> = ({ cl }) =>
   const { t } = useTranslation();
   return (
     <dl className="co-m-pane__details">
-      <DetailsItem label={t("MSG_DETAILS_TABDETAILS_1")} obj={cl} path="spec.provider" />
+      <DetailsItem label={t('COMMON:MSG_DETAILS_TABDETAILS_1')} obj={cl} path="spec.provider" />
       <DetailsItem label={t('COMMON:MSG_DETAILS_TABDETAILS_2')} obj={cl} path="spec.provider">
         {cl.spec.provider ? t('MULTI:MSG_MULTI_CLUSTERS_TABLECONTENTS_TYPE_1') : t('MULTI:MSG_MULTI_CLUSTERS_TABLECONTENTS_TYPE_2')}
       </DetailsItem>
       <DetailsItem label={t('COMMON:MSG_DETAILS_TABDETAILS_DETAILS_13')} obj={cl} path="status.ready">
         <Status status={cl.status.ready ? t('MULTI:MSG_MULTI_CLUSTERS_TABLECONTENTS_STATUS_1') : t('MULTI:MSG_MULTI_CLUSTERS_TABLECONTENTS_STATUS_2')} />
       </DetailsItem>
-      <DetailsItem label="Provider" obj={cl} path="spec.provider" />
       <DetailsItem label="Version" obj={cl} path="spec.version" />
       <DetailsItem label="Region" obj={cl} path="spec.region" />
       <DetailsItem label="Master Node" obj={cl} path="spec.masterNum">
@@ -166,7 +166,7 @@ const ClusterDetails: React.FC<ClusterDetailsProps> = ({ obj: cluster }) => {
   return (
     <>
       <div className="co-m-pane__body">
-        <SectionHeading text={t('COMMON:MSG_DETAILS_TABDETAILS_DETAILS_1', {0: ResourceLabel(cluster, t)})} />
+        <SectionHeading text={t('COMMON:MSG_DETAILS_TABDETAILS_DETAILS_1', { 0: ResourceLabel(cluster, t) })} />
         <div className="row">
           <div className="col-lg-6">
             <ResourceSummary resource={cluster} customPathName={'fakeMetadata.fakename'} showOwner={false} />
@@ -183,11 +183,11 @@ const ClusterDetails: React.FC<ClusterDetailsProps> = ({ obj: cluster }) => {
   );
 };
 
-const { details, /* nodes, */ editYaml /*, events */ } = navFactory;
+const { details, /* nodes, */ editYaml, events } = navFactory;
 export const Clusters: React.FC = props => {
   const { t } = useTranslation();
   return <Table {...props} aria-label="Clusters" Header={ClusterTableHeader.bind(null, t)} Row={ClusterTableRow} virtualize />;
-}
+};
 
 export const ClustersPage: React.FC<ClustersPageProps> = props => {
   const { t } = useTranslation();
@@ -195,6 +195,7 @@ export const ClustersPage: React.FC<ClustersPageProps> = props => {
 };
 
 export const ClustersDetailsPage: React.FC<ClustersDetailsPageProps> = props => {
+  const { t } = useTranslation();
   return (
     <DetailsPage
       {...props}
@@ -204,10 +205,26 @@ export const ClustersDetailsPage: React.FC<ClustersDetailsPageProps> = props => 
       pages={[
         details(detailsPage(ClusterDetails)),
         editYaml() /* nodes(ClusterNodes),  events(ResourceEventStream) */,
-        {
-          href: 'members',
-          name: 'Members',
+        /*{
+          href: 'node',
+          name: 'Node',
           component: pageProps => <MembersPage resource={pageProps.obj} title="Members" userHeading="Users" userGroupHeading="User Groups" />,
+        },
+        {
+          href: 'namespace',
+          name: 'Namespace',
+          component: pageProps => <MembersPage resource={pageProps.obj} title="Members" userHeading="Users" userGroupHeading="User Groups" />,
+        },
+        {
+          href: 'federation',
+          name: 'Federation',
+          component: pageProps => <MembersPage resource={pageProps.obj} title="Members" userHeading="Users" userGroupHeading="User Groups" />,
+        },*/
+        events(ResourceEventStream),
+        {
+          href: 'access',
+          name: t('COMMON:MSG_DETAILS_TABACCESSPERMISSIONS_1'),
+          component: pageProps => <MembersPage clusterName={pageProps.obj.metadata.name} namespace={pageProps.obj.metadata.namespace} owner={pageProps.obj.metadata.annotations.owner} title="Members" />,
         },
       ]}
     />

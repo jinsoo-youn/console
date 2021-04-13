@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"console/pkg/console"
 	"console/pkg/hypercloud"
 	"net/http"
 
@@ -32,7 +33,9 @@ var proxyCmd = &cobra.Command{
 		log.WithField("FILE", "proxy.go").Println("proxy called")
 		defaultServer = viper.Get("SERVER").(*hypercloud.HttpServer)
 		log.WithField("FILE", "proxy.go").Println(defaultServer.Server.(*http.Server).Addr)
-		// defaultServer.Switcher.UpdateHandler(http.HandlerFunc(func))
+		staticServer, _ := console.New(cfg)
+		staticHandler := staticServer.Server()
+		defaultServer.Switcher.UpdateHandler(staticHandler)
 	},
 }
 

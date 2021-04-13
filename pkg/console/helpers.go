@@ -26,25 +26,18 @@ const (
 	// Well-known location of the cluster monitoring (not user workload monitoring) Prometheus service for hypercloud.
 	// This is only accessible in-cluster. This is used for non-tenant global (alerting) rules requests.
 	hypercloudPrometheusEndpoint = "http://prometheus-k8s.monitoring.svc:9090/api"
-
 	// Well-known location of the tenant aware Thanos service for hypercloud. This is only accessible in-cluster.
 	// Thanos proxies requests to both cluster monitoring and user workload monitoring prometheus instances.
-	hypercloudThanosTenancyEndpoint = "http://prometheus-k8s.monitoring.svc:9090/api"
-
+	// hypercloudThanosTenancyEndpoint = "http://prometheus-k8s.monitoring.svc:9090/api"
 	// Well-known location of the Thanos service for hypercloud. This is only accessible in-cluster.
 	// This is used for non-tenant global query requests
 	// proxying to both cluster monitoring and user workload monitoring prometheus instances.
-	hypercloudThanosEndpoint = "http://prometheus-k8s.monitoring.svc:9090/api"
+	// hypercloudThanosEndpoint = "http://prometheus-k8s.monitoring.svc:9090/api"
 	// hypercloudThanosEndpoint = ""
-
 	// Well-known location of Alert Manager service for hypercloud. This is only accessible in-cluster.
 	hypercloudAlertManagerEndpoint = "http://alertmanager-main.monitoring.svc:9093/api"
 
-	// Well-known location of metering service for hypercloud. This is only accessible in-cluster.
-	// hypercloudMeteringEndpoint = "reporting-operator.hypercloud-metering.svc:8080"
-
 	// Well-known location of hypercloud-server for hypercloud. This is only accessible in-clsuter.
-	// TODO: url 입력
 	hypercloudServerEndpoint = "https://hypercloud5-api-server-service.hypercloud5-system.svc"
 
 	// Well-known location of hypercloud-server for hypercloud. This is only accessible in-clsuter. // http port : 80 don't require
@@ -57,6 +50,8 @@ const (
 	grafanaEndpoint = "http://grafana.monitoring.svc:3000/api/grafana/"
 	// Well-known location of kibana for hypercloud
 	kibanaEndpoint = "http://kibana.kube-logging.svc.cluster.local:5601/api/kibana/"
+	// Well-known location of kubeflow for hypercloud
+	kubeflowEndpoint = "http://istio-ingressgateway.istio-system.svc/api/kubeflow/"
 )
 
 func validateConfig(config *v1.Config) (err error) {
@@ -90,6 +85,7 @@ func createConsole(config *v1.Config) (*Console, error) {
 		k8sAuthServiceAccountBearerToken string
 		k8sURL                           *url.URL
 	)
+
 	k8sProxyConfig := &proxy.Config{}
 	// Console In Cluster
 	if config.K8sEndpoint == "" || config.K8sEndpoint == K8sEndpoint {
@@ -135,9 +131,6 @@ func createConsole(config *v1.Config) (*Console, error) {
 	if config.PrometheusEndpoint == "" {
 		config.PrometheusEndpoint = hypercloudPrometheusEndpoint
 	}
-	if config.ThanosEndpoint == "" {
-		config.ThanosEndpoint = hypercloudThanosEndpoint
-	}
 	if config.AlertmanagerEndpoint == "" {
 		config.AlertmanagerEndpoint = hypercloudAlertManagerEndpoint
 	}
@@ -159,6 +152,9 @@ func createConsole(config *v1.Config) (*Console, error) {
 	if config.KibanaEndpoint == "" {
 		config.KibanaEndpoint = kibanaEndpoint
 	}
+	if config.KubeflowEndpoint == "" {
+		config.KubeflowEndpoint = kubeflowEndpoint
+	}
 
 	return &Console{
 		BaseURL:   baseURL,
@@ -176,15 +172,16 @@ func createConsole(config *v1.Config) (*Console, error) {
 		// CustomLogoFile:    config.CustomLogoFile,
 		McMode:          config.McMode,
 		ReleaseModeFlag: config.ReleaseMode,
+		// GitlabURL:       config.GitlabURL,
 
 		KeycloakRealm:    config.KeycloakRealm,
 		KeycloakAuthURL:  config.KeycloakAuthURL,
 		KeycloakClientId: config.KeycloakClientId,
 
-		K8sProxyConfig:                   k8sProxyConfig,
-		PrometheusProxyConfig:            newProxy(config.PrometheusEndpoint),
-		ThanosProxyConfig:                newProxy(config.ThanosEndpoint),
-		ThanosTenancyProxyConfig:         newProxy(config.PrometheusEndpoint),
+		K8sProxyConfig:        k8sProxyConfig,
+		PrometheusProxyConfig: newProxy(config.PrometheusEndpoint),
+		// ThanosProxyConfig:                newProxy(config.ThanosEndpoint),
+		// ThanosTenancyProxyConfig:         newProxy(config.PrometheusEndpoint),
 		AlertManagerProxyConfig:          newProxy(config.AlertmanagerEndpoint),
 		GrafanaProxyConfig:               newProxy(config.GrafanaEndpoint),
 		KialiProxyConfig:                 newProxy(config.KialiEndpoint),
@@ -192,6 +189,7 @@ func createConsole(config *v1.Config) (*Console, error) {
 		HypercloudServerProxyConfig:      newProxy(config.HypercloudEndpoint),
 		MultiHypercloudServerProxyConfig: newProxy(config.MultiHypercloudEndpoint),
 		KibanaProxyConfig:                newProxy(config.KibanaEndpoint),
+		KubeflowProxyConfig:              newProxy(config.KubeflowEndpoint),
 	}, nil
 }
 

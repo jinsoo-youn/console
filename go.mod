@@ -28,7 +28,6 @@ require (
 	github.com/vulcand/predicate v1.1.0
 	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2 // indirect
 	golang.org/x/text v0.3.5 // indirect
-	google.golang.org/appengine v1.6.5
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gotest.tools v2.2.0+incompatible
 	sigs.k8s.io/yaml v1.2.0

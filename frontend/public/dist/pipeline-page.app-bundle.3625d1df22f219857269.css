@@ -1,0 +1,14 @@
+.odc-project-list-page {
+  background-color: var(--pf-global--BackgroundColor--light-100);
+  flex: 1;
+}
+
+.odc-project-list-page__section-border {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  border-bottom: 0.8px solid #ccc;
+}
+
+
+
+/*# sourceMappingURL=pipeline-page.app-bundle.3625d1df22f219857269.css.map*/

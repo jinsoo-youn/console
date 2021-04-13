@@ -22,7 +22,7 @@ import {
   alertState,
   silenceState,
 } from '../../reducers/monitoring';
-import { pipelineRunFilterReducer } from '../hypercloud/utils/pipeline-filter-reducer';
+import { pipelineRunFilterReducer } from '../../../packages/dev-console/src/utils/pipeline-filter-reducer';
 
 export const fuzzyCaseInsensitive = (a: string, b: string): boolean =>
   fuzzy(_.toLower(a), _.toLower(b));
@@ -82,6 +82,8 @@ export const tableFilters: TableFilterMap = {
   'silence-name': (filter, silence) => fuzzyCaseInsensitive(filter, silence.name),
 
   'silence-state': (filter, silence) => filter.selected.has(silenceState(silence)),
+
+  'trainingjob-kind': (filter, tj) => filter.selected.has(tj.kind === 'PyTorchJob' ? 'pytorchjob' : 'tfjob') || filter.selected.size === 0,
 
   // Filter role by role kind
   'role-kind': (filter, role) => filter.selected.has(roleType(role)) || filter.selected.size === 0,

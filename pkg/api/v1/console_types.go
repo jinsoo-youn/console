@@ -39,9 +39,10 @@ type ConsoleInfo struct {
 // +k8s:deepcopy-gen=true
 // Auth holds configuration for authenticating with OpenShift. The auth method is assumed to be "openshift".
 type Auth struct {
-	KeycloakRealm    string `yaml:"keycloakRealm,omitempty"`
-	KeycloakAuthURL  string `yaml:"keycloakAuthURL,omitempty"`
-	KeycloakClientId string `yaml:"keycloakClientId,omitempty"`
+	KeycloakRealm           string `yaml:"keycloakRealm,omitempty"`
+	KeycloakAuthURL         string `yaml:"keycloakAuthURL,omitempty"`
+	KeycloakClientId        string `yaml:"keycloakClientId,omitempty"`
+	KeycloakUseHiddenIframe string `yaml:"keycloakUseHiddenIframe,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
@@ -53,13 +54,14 @@ type ClusterInfo struct {
 	MultiHypercloudEndpoint string `yaml:"multiHypercloudEndpoint,omitempty"`
 	WebhookEndpoint         string `yaml:"WebhookEndpoint,omitempty"`
 	// Third party app
-	KialiEndpoint  string `yaml:"kialiEndpoint,omitempty"`
-	KibanaEndpoint string `yaml:"kibanaEndpoint,omitempty"`
+	KialiEndpoint    string `yaml:"kialiEndpoint,omitempty"`
+	KibanaEndpoint   string `yaml:"kibanaEndpoint,omitempty"`
+	KubeflowEndpoint string `yaml:"kubeflowEndpoint,omitempty"`
 	// Monitoring app
 	GrafanaEndpoint      string `yaml:"grafanaEndpoint,omitempty"`
 	AlertmanagerEndpoint string `yaml:"alertmanagerEndpoint,omitempty"`
 	PrometheusEndpoint   string `yaml:"prometheusEndpoint,omitempty"`
-	ThanosEndpoint       string `yaml:"thanosEndpoint,omitempty"`
+	GitlabURL            string `yaml:"gitlabURL,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true
