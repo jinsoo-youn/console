@@ -16,9 +16,11 @@ limitations under the License.
 package cmd
 
 import (
+	v1 "console/pkg/api/v1"
 	"console/pkg/console"
 	"console/pkg/hypercloud"
 	"net/http"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,6 +32,11 @@ var proxyCmd = &cobra.Command{
 	Short: "Run Web Server Only Serving Static Contents",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		err := v1.ValidateConfig(cfg)
+		if err != nil {
+			log.WithField("FILE", "root.go").Errorf("Validate Error: v1.ValidateConfig, line: 56 %v \n", err)
+			os.Exit(1)
+		}
 		log.WithField("FILE", "proxy.go").Println("proxy called")
 		defaultServer = viper.Get("SERVER").(*hypercloud.HttpServer)
 		log.WithField("FILE", "proxy.go").Println(defaultServer.Server.(*http.Server).Addr)

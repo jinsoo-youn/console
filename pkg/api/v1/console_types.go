@@ -42,7 +42,7 @@ type AuthInfo struct {
 	KeycloakRealm           string `yaml:"keycloakRealm,omitempty"`
 	KeycloakAuthURL         string `yaml:"keycloakAuthURL,omitempty"`
 	KeycloakClientId        string `yaml:"keycloakClientId,omitempty"`
-	KeycloakUseHiddenIframe string `yaml:"keycloakUseHiddenIframe,omitempty"`
+	KeycloakUseHiddenIframe bool   `yaml:"keycloakUseHiddenIframe,omitempty"`
 }
 
 // +k8s:deepcopy-gen=true

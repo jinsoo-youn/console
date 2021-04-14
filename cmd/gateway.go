@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	v1 "console/pkg/api/v1"
 	"console/pkg/config/dynamic"
 	"console/pkg/console"
 	"console/pkg/hypercloud"
@@ -51,6 +52,11 @@ var serverCmd = &cobra.Command{
 		log.Infof("On SERVER: %v \n", *cfg)
 		log.Infoln("Use Gateway handler")
 		// Create Static handler
+		err := v1.ValidateConfig(cfg)
+		if err != nil {
+			log.WithField("FILE", "root.go").Errorf("Validate Error: v1.ValidateConfig, line: 56 %v \n", err)
+			os.Exit(1)
+		}
 		staticServer, err := console.New(cfg)
 		if err != nil {
 			log.Errorf("error occure when create console.New(cfg) %v \n", err)
