@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	v1 "console/pkg/api/v1"
 	"console/pkg/auth"
+	"console/pkg/crypto"
 	"console/pkg/hypercloud/proxy"
 	"crypto/tls"
 	"crypto/x509"
@@ -14,8 +15,6 @@ import (
 	"net/url"
 	"runtime"
 	"strings"
-
-	"github.com/openshift/library-go/pkg/crypto"
 )
 
 func (r *Router) serverError(w http.ResponseWriter, err error) {
