@@ -19,6 +19,7 @@ import (
 	v1 "console/pkg/api/v1"
 	"console/pkg/config/dynamic"
 	"console/pkg/console"
+	"console/pkg/crypto"
 	"console/pkg/hypercloud"
 	pServer "console/pkg/hypercloud"
 	"console/pkg/hypercloud/provider/file"
@@ -34,7 +35,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/openshift/library-go/pkg/crypto"
+	// "github.com/openshift/library-go/pkg/crypto"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

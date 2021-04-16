@@ -1,8 +1,8 @@
 apiVersion: console.hypercloud.io/v1beta1
 kind: ConsoleConfig
 consoleInfo:
-  listen: https://172.31.75.178:9000
-  baseAddress: "https://172.31.75.178:9000"
+  listen: https://172.30.63.222:9000
+  baseAddress: "https://172.30.63.222:9000"
   basePath: "/"
   certFile: "tls/tls.crt"
   keyFile: "tls/tls.key"
@@ -24,7 +24,7 @@ clusterInfo:
   kubeflowEndpoint: "http://0.0.0.0/api/kubeflow"
   gitlabURL: "http://gitlab-test-deploy.ck1-2.192.168.6.151.nip.io/"
 appInfo: 
-  mcMode: false
+  mcMode: true
   releaseMode: true
   publicDir: "./frontend/public/dist"
   
